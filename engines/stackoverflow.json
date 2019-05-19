@@ -1,0 +1,9 @@
+{
+    "banner": "{bg=color166,fg=white}StackOverflow",
+	"query": "https://stackoverflow.com/search?q=",
+    "pager": {
+        "name": "next",
+        "href": "page="
+    },
+    "minSize": 30000
+}

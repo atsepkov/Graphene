@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+display_usage() { 
+	echo -e "\nUsage: $0 [engine] [query] \n" 
+} 
+
+show_search() {
+    local engine query
+    engine=$1
+    query=$2
+
+    # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
+    bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
+}
+
+# populates caches for all engines this script is aware of
+initialize() {
+    echo "Rebuilding cache...\n"
+    mkdir -p .cache
+}
+
+if [ "$#" -lt 2 ]; then
+    display_usage
+    exit 1
+fi
+
+while getopts ":hu" opt; do
+    case $opt in
+        h)  # help
+            display_usage
+            exit 0
+            ;;
+        u)  # update cache
+            initialize
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ ! -d .cache ]; then
+    initialize
+fi
+show_search $1 $2

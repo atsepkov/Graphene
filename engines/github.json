@@ -1,0 +1,8 @@
+{
+    "banner": "{bg=white,fg=black}GitHub",
+	"query": "https://github.com/search?q=",
+    "pager": {
+        "name": "Next",
+        "href": "p="
+    }
+}

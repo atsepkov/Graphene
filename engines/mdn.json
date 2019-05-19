@@ -1,0 +1,9 @@
+{
+    "banner": "{bg=white,fg=blue}MDN web docs",
+	"query": "https://developer.mozilla.org/en-US/search?q=",
+    "pager": {
+        "name": "Next",
+        "href": "page=",
+        "id": "search-result-next"
+    }
+}
