@@ -1,0 +1,8 @@
+{
+    "banner": "{bg=red,fg=white}NPM",
+	"query": "https://www.npmjs.com/search?q=",
+    "pager": {
+        "name": "»",
+        "href": "page="
+    }
+}

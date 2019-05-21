@@ -1,25 +1,10 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
+const { color, readCache, writeCache } = require('./utils');
 
 const engine = process.argv[2];
 const query = process.argv[3];
 
 
-// color scheme
-let color = {
-    reset: '\x1b[0m',
-    bright: '\x1b[1m',
-    italic: '\x1b[3m',
-    underscore: '\x1b[4m',
-    black: '\x1b[30m',
-    red: '\x1b[31m',
-    green: '\x1b[32m',
-    yellow: '\x1b[33m',
-    blue: '\x1b[34m',
-    magenta: '\x1b[35m',
-    cyan: '\x1b[36m',
-    white: '\x1b[37m',
-};
 
 // populate banner
 function banner() {
@@ -103,22 +88,6 @@ function findGroupByStyle(currentResults, style) {
     return -1;
 }
 
-// reads previously written cache
-function readCache() {
-    let json;
-    try {
-        json = require('./.cache/' + engine);
-    } catch (e) {
-        json = {};
-    }
-
-    return json;
-};
-
-// writes page as a cache file to disk
-function writeCache(json) {
-    fs.writeFileSync('.cache/' + engine + '.json', JSON.stringify(json));
-};
 
 // returns domain name from passed URL
 function domain(url) {
@@ -139,9 +108,10 @@ function domain(url) {
 
 // removes any groups/elements that are static between pages, pages are cached
 function removeCruftAndClassify(currentResults) {
-    let cache = readCache();
+    let cache = readCache(engine, 'template');
     if (cache.groups) {
         // filter out results based on cache
+        let urlMap = {};
         cache.groups.forEach(group => {
             let index = findGroupByStyle(currentResults, group.style);
             let cruft = [];
@@ -169,6 +139,9 @@ function removeCruftAndClassify(currentResults) {
                             }
                         }
                     }
+                    currentGroup.elements.forEach(e => {
+                        urlMap[e.href] = e;
+                    })
                 });
 
                 const mostly = (group) => group.length / currentGroup.elements.length > 0.7;
@@ -188,9 +161,10 @@ function removeCruftAndClassify(currentResults) {
                 }
             }
         })
+        writeCache(engine, 'current', urlMap);
     } else {
         // no cache yet, create it
-        writeCache(currentResults);
+        writeCache(engine, 'template', currentResults);
     }
     return currentResults;
 }
@@ -293,10 +267,11 @@ const isValidUrl = (string) => {
         // extract important DOM element properties into serializable JSON object
         function extract(element) {
             return {
+                tag: element.tagName,
                 css: getStyle(element),
                 href: element.href,
-                name: element.innerText.trim(), 
-                classes: element.classList, 
+                name: element.innerText ? element.innerText.trim() : '', 
+                classes: [...element.classList], 
                 id: element.id
             };
         }
@@ -314,6 +289,86 @@ const isValidUrl = (string) => {
                 w: maxX - minX,
                 h: maxY - minY
             };
+        }
+
+        // helper function for expandSelection
+        function isSameStyle(a, b) {
+            a = getStyle(a);
+            b = getStyle(b);
+
+            if (
+                a.fontSize === b.fontSize &&
+                a.fontFamily === b.fontFamily &&
+                a.fontWeight === b.fontWeight &&
+                a.color === b.color &&
+                a.border === b.border && 
+                a.visible === b.visible &&
+                a.level === b.level
+            ) {
+                return true;
+            }
+            return false;
+        }
+
+        // expands selection to elements encompassing the link elements until largest common
+        // ancestor is found for all elements in the group (a basis for better preview)
+        function expandSelection(nodes) {
+            let parents = [...nodes].map(e => {
+                let node = e._node;
+                delete e._node;
+                return node;
+            });
+            if (parents.length === 1) {
+                // there won't be other elements to compare the context to, assume no context
+                return parents;
+            }
+            let grandParents;
+            while (true) {
+                grandParents = [];
+                for (var i=0; i < parents.length; i++) {
+                    let parent = parents[i].parentNode;
+                    if (parent === window) {
+                        return parents;
+                    }
+                    if (grandParents.length) {
+                        let prev = grandParents[grandParents.length-1];
+                        if (prev === parent) {
+                            // at least two elements joined, stop analyzing
+                            console.log('prev parent same', JSON.stringify(extract(parent)))
+                            return parents;
+                        } else if (!isSameStyle(prev, parent)) {
+                            // styles don't match
+                            console.log('style mistmatch', JSON.stringify(extract(prev)), JSON.stringify(extract(parent)))
+                            return parents;
+                        }
+                    }
+                    grandParents.push(parent);
+                }
+                console.log('expanded parents for tag: ', parents[0].tagName)
+                parents = grandParents;
+            }
+            return parents;
+        }
+
+        // fetches details from current selection suitable for rendering later
+        function getRenderDetail(node) {
+            let detail = {
+                ...extract(node),
+                children: Array.prototype.map.call(node.childNodes, function (element) {
+                    if (element.nodeType === Node.TEXT_NODE) {
+                        return element.textContent;
+                    } else if (element.nodeType === Node.ELEMENT_NODE) {
+                        return getRenderDetail(element);
+                    } else {
+                        return '';
+                    }
+                })
+            };
+            if (detail.css.visible) {
+                return detail;
+            } else {
+                return '';
+            }
         }
 
         // group a list of DOM elements by visual style
@@ -371,13 +426,23 @@ const isValidUrl = (string) => {
         let relevant = [];
         for (var i = 0; i < elements.length; i++) {
             var e = extract(elements[i]);
+            e._node = elements[i];
             if (e.css.visible) {
                 relevant.push(e);
             }
         }
 
+        // fill in extra context for better preview later
+        let groups = groupByStyle(relevant).sort((a, b) => a.coverage < b.coverage ? 1 : -1);
+        groups.forEach(group => {
+            let parents = expandSelection(group.elements);
+            group.elements.forEach((element, index) => {
+                element.context = getRenderDetail(parents[index]);
+            });
+        });
+
         return {
-            groups: groupByStyle(relevant).sort((a, b) => a.coverage < b.coverage ? 1 : -1)
+            groups: groups
         };
     }, process.stdout.columns);
 
