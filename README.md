@@ -5,6 +5,13 @@ but works decently well. The original inspiration for this project was Ranger Fi
 the web would require a significant rewrite, I put the project aside. Then, a couple months later, I stumbled into FZF, and figured I'd give this tool
 a try again using FZF instead of Ranger as a core. And this is the result.
 
+Dependencies
+=====
+- FZF
+- node.js
+- (npm) puppeteer 
+- Lynx
+
 Usage
 =====
 ```
