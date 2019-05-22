@@ -67,6 +67,11 @@ function outputToTerminal(format, data) {
     }
 }
 
+// helper function for determining if paths are the same
+function isSamePath(a, b) {
+    return a.path.every((element, index) => element === b.path[index]);
+}
+
 // finds a group with the same style in current results
 // chances are groups will be in the same order, but there may be missing/new
 // groups depending on what the search engine inserts into the page (ads, previews, maps, cards)
@@ -80,7 +85,7 @@ function findGroupByStyle(currentResults, style) {
             group.style.color === style.color &&
             group.style.border === style.border && 
             group.style.visible === style.visible &&
-            group.style.level === style.level
+            isSamePath(group.style, style)
         ) {
             return index;
         }
@@ -112,14 +117,15 @@ function removeCruftAndClassify(currentResults) {
     if (cache.groups) {
         // filter out results based on cache
         let urlMap = {};
-        cache.groups.forEach(group => {
-            let index = findGroupByStyle(currentResults, group.style);
+        currentResults.groups.slice(0).forEach(group => {
+            let index = findGroupByStyle(cache, group.style);
             let cruft = [];
+            let jsLink = [];
             let generic = [];
             if (index !== -1) {
-                let currentGroup = currentResults.groups[index];
+                let cachedGroup = cache.groups[index];
                 group.elements.forEach(element => {
-                    let found = currentGroup.elements.find(currentElement => {
+                    let found = cachedGroup.elements.find(currentElement => {
                         return currentElement.name === element.name;
                     });
                     if (found) {
@@ -132,33 +138,43 @@ function removeCruftAndClassify(currentResults) {
                             generic.push(found);
                             if (found.name === settings.pager.name &&
                                 found.href.includes(settings.pager.href) &&
-                                domain(found.href) === domain(settings.query)
+                                domain(element.href) === domain(settings.query)
                             ) {
                                 // this is a pager group
-                                currentGroup.pagers = true;
+                                group.pagers = true;
                             }
                         }
+                    } else if (element.href.slice(0, 11) === "javascript:") {
+                        jsLink.push(element);
                     }
-                    currentGroup.elements.forEach(e => {
+                    group.elements.forEach(e => {
                         urlMap[e.href] = e;
                     })
                 });
 
-                const mostly = (group) => group.length / currentGroup.elements.length > 0.7;
+                const mostly = (g) => g.length / group.elements.length > 0.7;
                 
+                let currentIndex = currentResults.groups.indexOf(group);
                 if (mostly(cruft)) {
                     // a lot of generic elements
-                    currentResults.groups.splice(index, 1);
-                } else if (!currentGroup.pagers && group.elements.length < 2) {
+                    currentResults.groups.splice(currentIndex, 1);
+                } else if (mostly(jsLink)) {
+                    // a lot of elements that only execute JS, we can't do anything with them yet
+                    currentResults.groups.splice(currentIndex, 1);
+                } else if (!group.pagers && group.elements.length < 2) {
                     // only 1 element in group
-                    currentResults.groups.splice(index, 1);
+                    currentResults.groups.splice(currentIndex, 1);
                 } else if (mostly(generic)) {
                     // group of generically-named components
-                    currentGroup.generic = true;
-                } else if (currentGroup.coverage < (settings.minSize ? settings.minSize : 30000)) {
+                    group.generic = true;
+                } else if (group.coverage < (settings.minSize ? settings.minSize : 30000)) {
                     // group is too small to seem significant
-                    currentGroup.other = true;
+                    group.other = true;
                 }
+            } else {
+                group.elements.forEach(e => {
+                    urlMap[e.href] = e;
+                })
             }
         })
         writeCache(engine, 'current', urlMap);
@@ -192,7 +208,18 @@ const isValidUrl = (string) => {
 }
 
 (async () => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-infobars',
+            '--window-position=0,0',
+            '--ignore-certifcate-errors',
+            '--ignore-certifcate-errors-spki-list',
+            '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
+        ],
+        ignoreHTTPSErrors: true,
+    });
     const page = await browser.newPage();
     /*await page.setRequestInterception(true);
 
@@ -234,11 +261,18 @@ const isValidUrl = (string) => {
             return true;
         }
 
+        // squishes node into its CSS selector
+        function extractCssSelector(node) {
+            return node.tagName + 
+                (node.id ? '#' + node.id : '') + 
+                (node.className ? '.' + Array.prototype.join.call(node.classList, '.') : '');
+        }
+
         // find DOM element ancestors
-        function parents(node) {
-            var nodes = [node]
+        function listParents(node) {
+            var nodes = [extractCssSelector(node)]
             for (; node; node = node.parentNode) {
-                nodes.unshift(node)
+                nodes.unshift(extractCssSelector(node))
             }
             return nodes
         }
@@ -254,7 +288,7 @@ const isValidUrl = (string) => {
                 color: style.color,
                 border: style.border, 
                 visible: isVisible(element),
-                level: parents(element).length, 
+                display: style.display,
                 loc: {
                     x: dimensions.left,
                     y: dimensions.top,
@@ -272,6 +306,7 @@ const isValidUrl = (string) => {
                 href: element.href,
                 name: element.innerText ? element.innerText.trim() : '', 
                 classes: [...element.classList], 
+                path: listParents(element),
                 id: element.id
             };
         }
@@ -302,8 +337,7 @@ const isValidUrl = (string) => {
                 a.fontWeight === b.fontWeight &&
                 a.color === b.color &&
                 a.border === b.border && 
-                a.visible === b.visible &&
-                a.level === b.level
+                a.visible === b.visible
             ) {
                 return true;
             }
@@ -312,8 +346,8 @@ const isValidUrl = (string) => {
 
         // expands selection to elements encompassing the link elements until largest common
         // ancestor is found for all elements in the group (a basis for better preview)
-        function expandSelection(nodes) {
-            let parents = [...nodes].map(e => {
+        function expandSelection(elements) {
+            let parents = [...elements].map(e => {
                 let node = e._node;
                 delete e._node;
                 return node;
@@ -334,17 +368,14 @@ const isValidUrl = (string) => {
                         let prev = grandParents[grandParents.length-1];
                         if (prev === parent) {
                             // at least two elements joined, stop analyzing
-                            console.log('prev parent same', JSON.stringify(extract(parent)))
                             return parents;
                         } else if (!isSameStyle(prev, parent)) {
                             // styles don't match
-                            console.log('style mistmatch', JSON.stringify(extract(prev)), JSON.stringify(extract(parent)))
                             return parents;
                         }
                     }
                     grandParents.push(parent);
                 }
-                console.log('expanded parents for tag: ', parents[0].tagName)
                 parents = grandParents;
             }
             return parents;
@@ -352,23 +383,75 @@ const isValidUrl = (string) => {
 
         // fetches details from current selection suitable for rendering later
         function getRenderDetail(node) {
-            let detail = {
-                ...extract(node),
-                children: Array.prototype.map.call(node.childNodes, function (element) {
-                    if (element.nodeType === Node.TEXT_NODE) {
-                        return element.textContent;
-                    } else if (element.nodeType === Node.ELEMENT_NODE) {
-                        return getRenderDetail(element);
-                    } else {
-                        return '';
-                    }
-                })
-            };
+            let detail = extract(node);
             if (detail.css.visible) {
-                return detail;
+                return {
+                    ...detail,
+                    children: Array.prototype.map.call(node.childNodes, (node) => {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            return node.textContent;
+                        } else if (node.nodeType === Node.ELEMENT_NODE) {
+                            return getRenderDetail(node);
+                        } else {
+                            return '';
+                        }
+                    })
+                }
             } else {
                 return '';
             }
+        }
+
+        // compares children of each node
+        function isSameRenderDetail(a, b) {
+
+            // there may be undefined nodes
+            if (a === undefined) {
+                if (b === undefined) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (b === undefined) {
+                return false;
+            }
+
+            // there may be text nodes
+            if (a.nodeType === Node.TEXT_NODE) {
+                if (b.nodeType === Node.TEXT_NODE) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (b.nodeType === Node.TEXT_NODE) {
+                return false;
+            }
+
+            let aSummary = getRenderDetail(a);
+            let bSummary = getRenderDetail(b);
+
+            // there may be invisible nodes
+            if (aSummary === '') {
+                if (bSummary === '') {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (bSummary === '') {
+                return false;
+            }
+
+            if (
+                aSummary.css.fontSize === bSummary.css.fontSize &&
+                aSummary.css.fontFamily === bSummary.css.fontFamily &&
+                aSummary.css.fontWeight === bSummary.css.fontWeight &&
+                aSummary.css.color === bSummary.css.color &&
+                aSummary.css.border === bSummary.css.border &&
+                [...a.childNodes].every((child, i) => isSameRenderDetail(child, b.childNodes[i]))
+            ) {
+                return true;
+            }
+            return false;
         }
 
         // group a list of DOM elements by visual style
@@ -390,7 +473,7 @@ const isValidUrl = (string) => {
                             e.css.loc.y === style.loc.y ||
                             e.css.loc.x + e.css.loc.w === style.loc.x + style.loc.w ||
                             e.css.loc.y + e.css.loc.h === style.loc.y + style.loc.h
-                        )
+                        ) && isSameRenderDetail(e._node, groups[i].elements[0]._node)
                     ) {
                         groups[i].elements.push(e);
                         groups[i].style.loc = combineRegion(
@@ -406,7 +489,7 @@ const isValidUrl = (string) => {
                 // otherwise start a new group
                 groups.push({
                     // deep-copy the structure, since we will edit size
-                    style: { ...e.css, loc: { ...e.css.loc} },
+                    style: { ...e.css, loc: { ...e.css.loc}, path: e.path },
                     elements: [e],
                     area: e.css.loc.w * e.css.loc.h,
                     coverage: e.css.loc.w * e.css.loc.h

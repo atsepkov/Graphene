@@ -11,7 +11,7 @@ show_search() {
 
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
-    bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node preview.js $engine {}")"
+    bash open.sh $engine "$(node search.js $engine "$query" 2>/dev/null | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node preview.js $engine {}")"
 }
 
 # populates caches for all engines this script is aware of
