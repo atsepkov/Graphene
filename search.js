@@ -499,6 +499,11 @@ const isValidUrl = (string) => {
             return groups;
         }
 
+        // returns relative significance of the group based on a number of heuristics
+        function significance(group) {
+            return group.coverage;
+        }
+
 
 
         /** END LIST, BEGIN PROGRAM **/
@@ -516,7 +521,7 @@ const isValidUrl = (string) => {
         }
 
         // fill in extra context for better preview later
-        let groups = groupByStyle(relevant).sort((a, b) => a.coverage < b.coverage ? 1 : -1);
+        let groups = groupByStyle(relevant).sort((a, b) => significance(a) < significance(b) ? 1 : -1);
         groups.forEach(group => {
             let parents = expandSelection(group.elements);
             group.elements.forEach((element, index) => {

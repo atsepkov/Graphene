@@ -3,14 +3,10 @@ Interceptor Browser
 This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal. It's still a work in progress,
 but works decently well. The original inspiration for this project was Ranger File Manager, but after realizing that adapting it from local browsing to
 the web would require a significant rewrite, I put the project aside. Then, a couple months later, I stumbled into FZF, and figured I'd give this tool
-a try again using FZF instead of Ranger as a core. And this is the result.
+a try again using FZF instead of Ranger as a way to represent results. And this is the result.
 
-Dependencies
-=====
-- FZF
-- node.js
-- (npm) puppeteer 
-- Lynx
+Main use case for this is to minimize context switch by starting your search in the termimal (same place you're editing your code), and only jump to the
+browser if you found the result you want. This also cuts down distractions that you'll likely encounter in the regular browser.
 
 Usage
 =====
@@ -32,6 +28,12 @@ The only required fields are `query` (url used to formulate a search query) and 
 navigational link that goes to next page of search results). For best results, you should fill in as many parameters for the engine as possible.
 If your engine works well, feel free to contribute it back to this repository.
 
+Dependencies
+=====
+- FZF
+- node.js
+- puppeteer 
+
 FAQ
 ===
 
@@ -44,15 +46,20 @@ Groups whose elements don't change at all between searches are deemed unimportan
 to the search in some way but aren't part of the results).
 
 #### Can this be made faster/smarter by specifying the exact class/id of the results group?
-That's typically what most scrapers do, and why they're easy to break with minor changes to the search engine. This aggregator uses more generic heuristics
+That's typically what scrapers do, and why they're easy to break with minor changes to the search engine. This aggregator uses more generic heuristics
 and therefore harder to fool. For example, Google runs some sort of uglifier on their frontend. This uglifier mangles class/id names. These names then
 stay consistent between searches (giving you the illusion of your selector working), but change every time Google redeploys their frontend (which happens
-several times per week). This aggregator doesn't care about changes like that it analyzes link significance on the page the same way a human would. Moreover,
+several times per week). This aggregator doesn't care about changes like that, it analyzes link significance on the page the same way a human would. Moreover,
 even if the engine decides to change the page in a significant way, the aggregator should be able to adapt to it after clearing your old cache.
 
 #### Can this profile a page that's not a search engine?
 In theory yes, in practice I haven't tried yet. You can pass an exact URL instead of the query to open, at which point the aggregator technically does not
 need the query. You still need to specify an engine to use, however, to use for caching. If you have an idea for how to build a cache for a page that's not
 a search engine, feel free to contribute to this project or open an issue. The main use of the cache is that it profiles cruft/navigational components.
-Problem is a webpage that is not a search engine will not have the main results change between "searches" either, hence the caching logic will classify it
-as cruft as well.
+Problem is a webpage that is not a search engine will not have the main results change between "searches" either, hence the caching logic will classify actual
+results as cruft as well.
+
+#### Does this comply with terms of use for the websites being aggregated?
+Most websites should be fine with it (especially since I'm not explicitly blocking ads - they'd just get classified into one of the less relevant categories).
+I'm also not monetizing their results in any way, which is typically what triggers them to go after you. Some websites do indeed have very draconic 
+(and probably unenforcable) policies, worst thing they'll do is block puppeteer from being able to crawl their website or temporarily ban the abusing IP.
