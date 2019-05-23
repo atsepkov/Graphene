@@ -5,5 +5,7 @@
         "name": "next",
         "href": "page="
     },
-    "minSize": 30000
+    "minSize": 30000,
+    "resultsPerPage": 20,
+    "resultModifier": "&pagesize="
 }

@@ -5,5 +5,7 @@
         "name": "Next",
         "href": "&start="
     },
-    "minSize": 30000
+    "resultsPerPage": 20,
+    "resultModifier": "&num=",
+    "minGroupSize": 30000
 }

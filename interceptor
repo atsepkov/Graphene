@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 
 display_usage() { 
-	echo -e "\nUsage: $0 [engine] [query] \n" 
+	echo -e "\nUsage: $0 [options] [engine] [query] \n" 
+    echo -e "Options:\n"
+    echo -e "\t-h, --help\t\tPrint this help message and exit.\n"
+    echo -e "\t-r [number]\t\tNumber of results you want the search to return (not all engines will respect this).\n"
 } 
 
 show_search() {
     local engine query
     engine=$1
     query="$2"
-    echo $query
 
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
-    bash open.sh $engine "$(node search.js $engine "$query" 2>/dev/null | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node preview.js $engine {}")"
+    bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node preview.js $engine {}")"
 }
 
 # populates caches for all engines this script is aware of
@@ -26,11 +28,14 @@ if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
-while getopts ":hu" opt; do
+while getopts ":hr:u" opt; do
     case $opt in
-        h)  # help
+        h|help)  # help
             display_usage
             exit 0
+            ;;
+        r|results)  # number of results to prefer
+            export RESULTS=$OPTARG; shift
             ;;
         u)  # update cache
             initialize

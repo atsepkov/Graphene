@@ -5,7 +5,6 @@ const engine = process.argv[2];
 const query = process.argv[3];
 
 
-
 // populate banner
 function banner() {
     if (settings.banner) {
@@ -167,7 +166,7 @@ function removeCruftAndClassify(currentResults) {
                 } else if (mostly(generic)) {
                     // group of generically-named components
                     group.generic = true;
-                } else if (group.coverage < (settings.minSize ? settings.minSize : 30000)) {
+                } else if (group.coverage < (settings.minGroupSize ? settings.minGroupSize : 30000)) {
                     // group is too small to seem significant
                     group.other = true;
                 }
@@ -239,7 +238,8 @@ const isValidUrl = (string) => {
         await page.goto(query);
     } else {
         // start a new search with query
-        await page.goto(settings.query + encodeURIComponent(query));
+        let modifier = settings.resultModifier ? settings.resultModifier + (process.env.RESULTS || settings.resultsPerPage || 20) : '';
+        await page.goto(settings.query + encodeURIComponent(query) + modifier);
     }
     // await page.screenshot({path: 'example.png'});
     let results = await page.evaluate((columns) => {
