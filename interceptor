@@ -7,7 +7,8 @@ display_usage() {
 show_search() {
     local engine query
     engine=$1
-    query=$2
+    query="$2"
+    echo $query
 
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
@@ -44,4 +45,4 @@ done
 if [ ! -d .cache ]; then
     initialize
 fi
-show_search $1 $2
+show_search $1 "$2"
