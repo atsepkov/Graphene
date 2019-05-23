@@ -1,0 +1,8 @@
+{
+    "banner": "{bg=white,fg=yellow}Amazon",
+	"query": "https://www.amazon.com/s?k=",
+    "pager": {
+        "name": "Next  →",
+        "href": "page="
+    }
+}

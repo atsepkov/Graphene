@@ -454,6 +454,13 @@ const isValidUrl = (string) => {
             return false;
         }
 
+        // these parameters are used for normalization later
+        let metrics = {
+            'max-area': 0,
+            'max-coverage': 0,
+            'max-textLength': 0
+        };
+
         // group a list of DOM elements by visual style
         function groupByStyle(elements) {
             var groups = [];
@@ -482,11 +489,12 @@ const isValidUrl = (string) => {
                         );
                         groups[i].coverage = groups[i].style.loc.w * groups[i].style.loc.h;
                         groups[i].area += e.css.loc.w * e.css.loc.h;
+
                         return;
                     }
                 }
 
-                // otherwise start a new group
+                // group doesn't exist, start a new group
                 groups.push({
                     // deep-copy the structure, since we will edit size
                     style: { ...e.css, loc: { ...e.css.loc}, path: e.path },
@@ -496,12 +504,34 @@ const isValidUrl = (string) => {
                 });
             });
 
+            // gather metrics
+            const updateMax = (group, type) => {
+                metrics['max-' + type] = Math.max(metrics['max-' + type], group[type]);
+            }
+            groups.forEach(group => {
+                group.textLength = group.elements.reduce((a, v) => { return a + v.name.length }, 0);
+
+                updateMax(group, 'area');
+                updateMax(group, 'coverage');
+                updateMax(group, 'textLength');
+            });
+
             return groups;
+        }
+
+        // helper logic for normalizing significance params and applying weights
+        const weights = {
+            coverage: 1,    // coverage is the amount of space your elements seem to cover on screen (how spread out they are)
+            area: 1,        // area correlates with things like font size but may break if you stick a large image inside <a> that's not a main group
+            textLength: 1   // text length is the combined length of all text inside the given group of links
+        }
+        const weigh = (group, field) => {
+            return weights[field] * group[field] / metrics['max-' + field];
         }
 
         // returns relative significance of the group based on a number of heuristics
         function significance(group) {
-            return group.coverage;
+            return weigh(group, 'coverage') + weigh(group, 'area') + weigh(group, 'textLength');
         }
 
 
