@@ -29,9 +29,9 @@ function banner() {
             if (!i) escCode += ' '; // pad the beginning
             banner = banner.replace(match, escCode);
         });
-        return banner + ' ' + color.reset; // pad and terminate the end
+        return `${banner} ${color.reset} ${color.bright}${query}${color.reset}`;
     } else {
-        return engine;
+        return `${color.red}${engine} ${color.reset} ${color.bright}${query}${color.reset}`;
     }
 }
 
