@@ -1,6 +1,8 @@
 {
     "banner": "{bg=white,fg=black}GitHub",
 	"query": "https://github.com/search?q=",
+    "goodQuery": "react",
+    "badQuery": "dlskjadbhlads",
     "pager": {
         "name": "Next",
         "href": "p="

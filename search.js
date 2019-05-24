@@ -36,6 +36,9 @@ function banner() {
 
 // output data
 function outputToTerminal(format, data) {
+    // return if we're just caching
+    if (!data) return;
+
     if (format === "json") {
         console.log(JSON.stringify(data));
     } else if (format === 'shell') {
@@ -112,8 +115,10 @@ function domain(url) {
 
 // removes any groups/elements that are static between pages, pages are cached
 function removeCruftAndClassify(currentResults) {
-    let cache = readCache(engine, 'template');
-    if (cache.groups) {
+    if (process.env.CACHING) {
+        writeCache(engine, 'template', currentResults);
+    } else {
+        let cache = readCache(engine, 'template');
         // filter out results based on cache
         let urlMap = {};
         currentResults.groups.slice(0).forEach(group => {
@@ -177,11 +182,8 @@ function removeCruftAndClassify(currentResults) {
             }
         })
         writeCache(engine, 'current', urlMap);
-    } else {
-        // no cache yet, create it
-        writeCache(engine, 'template', currentResults);
+        return currentResults;
     }
-    return currentResults;
 }
 
 // load engine-specific settings
@@ -220,7 +222,7 @@ const isValidUrl = (string) => {
         ignoreHTTPSErrors: true,
     });
     const page = await browser.newPage();
-    /*await page.setRequestInterception(true);
+    await page.setRequestInterception(true);
 
     // skip downloading images
     page.on('request', request => {
@@ -229,11 +231,14 @@ const isValidUrl = (string) => {
         } else {
             request.continue();
         }
-    });*/
+    });
 
-    page.on('console', msg => console.log(msg.text()));
+    // page.on('console', msg => console.log('page log: ' + msg.text()));
 
-    if (isValidUrl(query) && domain(query) === domain(settings.query)) {
+    if (process.env.CACHING) {
+        // caching page structure
+        await page.goto(settings.query + encodeURIComponent(settings.badQuery));
+    } else if (isValidUrl(query) && domain(query) === domain(settings.query)) {
         // go directly to this page
         await page.goto(query);
     } else {

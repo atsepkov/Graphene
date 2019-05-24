@@ -1,6 +1,8 @@
 {
     "banner": "{bg=white,fg=blue}MDN web docs",
 	"query": "https://developer.mozilla.org/en-US/search?q=",
+    "goodQuery": "drag and drop",
+    "badQuery": "dlskjadbhlads",
     "pager": {
         "name": "Next",
         "href": "page=",

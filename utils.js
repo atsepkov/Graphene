@@ -33,6 +33,55 @@ function writeCache(engine, type, json) {
     fs.writeFileSync('.cache/' + engine + '-' + type + '.json', JSON.stringify(json));
 };
 
+// dictionary of common element names
+let dictionary = {
+    // groups that are typically not actionable from terminal
+    cruft: [
+        // account
+        'sign in',
+        'log in',
+        'login',
+        'sign up',
+        'join',
+        'register',
+
+        // menus
+        'about',
+        'help',
+        'home',
+        'privacy',
+        'return policy',
+        'privacy policy',
+        'terms',
+        'terms of service',
+        'terms of use',
+        'settings',
+
+        // media sharing
+        'facebook',
+        'twitter',
+        'youtube',
+        'twitch',
+        'reddit',
+    ],
+    // navigation elements/groups
+    navigation: {
+        name: [
+            '^next',
+            '^prev',
+            '^previous',
+            '^back',
+            '^newer',
+            '^older',
+        ],
+        hrefHas: [
+            '\\bstart=\\d*\\b',
+            '\\bpage=\\d*\\b',
+            '\\bp=\\d*\\b'
+        ]
+    }
+};
+
 module.exports = {
     color,
     readCache,

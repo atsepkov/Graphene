@@ -1,6 +1,8 @@
 {
     "banner": "{bg=red,fg=white}NPM",
 	"query": "https://www.npmjs.com/search?q=",
+    "goodQuery": "react",
+    "badQuery": "dlskjadbhlads",
     "pager": {
         "name": "»",
         "href": "page="

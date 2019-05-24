@@ -1,6 +1,8 @@
 {
     "banner": "{bg=white,fg=blue}G{fg=red}o{fg=yellow}o{fg=blue}g{fg=green}l{fg=red}e",
 	"query": "https://www.google.com/search?q=",
+    "goodQuery": "food",
+    "badQuery": "dlskjadbhlads",
     "pager": {
         "name": "Next",
         "href": "&start="

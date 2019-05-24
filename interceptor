@@ -19,8 +19,14 @@ show_search() {
 
 # populates caches for all engines this script is aware of
 initialize() {
-    echo "Rebuilding cache...\n"
+    local engine
+    engine=$1
+
+    echo "Rebuilding cache for $engine..."
     mkdir -p .cache
+    export CACHING=1
+    node search.js $engine
+    unset CACHING
 }
 
 if [ "$#" -lt 2 ]; then
@@ -28,7 +34,7 @@ if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
-while getopts ":hr:u" opt; do
+while getopts ":hr:" opt; do
     case $opt in
         h|help)  # help
             display_usage
@@ -37,9 +43,6 @@ while getopts ":hr:u" opt; do
         r|results)  # number of results to prefer
             export RESULTS=$OPTARG; shift
             ;;
-        u)  # update cache
-            initialize
-            ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
             exit 1
@@ -47,7 +50,7 @@ while getopts ":hr:u" opt; do
     esac
 done
 
-if [ ! -d .cache ]; then
-    initialize
+if [ ! -d .cache ] || [ ! -f .cache/$1-template.json ]; then
+    initialize $1
 fi
 show_search $1 "$2"

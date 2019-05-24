@@ -31,7 +31,9 @@ function colorToAnsi(rgb, type) {
 
     // very crappy simulation of colors because FZF currently only does 8 colors
     if (colors[0] < 30 && colors[1] < 30 && colors[2] < 30) {
-        return mod + color.black;
+        // most websites are black text on white background, so ignore this setting for now
+        // return mod + color.black;
+        return mod + color.white;
     } else if (colors[0] > colors[1] * 2 && colors[0] > colors[2] * 2) {
         return mod + color.red;
     } else if (colors[1] > colors[0] * 2 && colors[1] > colors[2] * 2) {
