@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
 display_usage() { 
-	echo -e "\nUsage: $0 [options] [engine] [query] \n" 
+	echo -e "\nUsage: $0 [options] [engine] [query]"
+    echo -e "       Search for [query] using specified search engine."
+	echo -e "\n       $0 [options] url [url]" 
+    echo -e "       Parse a specific website/url."
     echo -e "Options:\n"
     echo -e "\t-h, --help\t\tPrint this help message and exit.\n"
     echo -e "\t-r [number]\t\tNumber of results you want the search to return (not all engines will respect this).\n"
@@ -50,7 +53,9 @@ while getopts ":hr:" opt; do
     esac
 done
 
-if [ ! -d .cache ] || [ ! -f .cache/$1-template.json ]; then
-    initialize $1
+if [ "$1" != "url" ]; then
+    if [ ! -d .cache ] || [ ! -f .cache/$1-template.json ]; then
+        initialize $1
+    fi
 fi
 show_search $1 "$2"

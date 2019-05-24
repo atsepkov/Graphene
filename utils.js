@@ -85,5 +85,6 @@ let dictionary = {
 module.exports = {
     color,
     readCache,
-    writeCache
+    writeCache,
+    dictionary
 };

@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { color, readCache, writeCache } = require('./utils');
+const { color, dictionary, readCache, writeCache } = require('./utils');
 
 const engine = process.argv[2];
 const query = process.argv[3];
@@ -7,7 +7,7 @@ const query = process.argv[3];
 
 // populate banner
 function banner() {
-    if (settings.banner) {
+    if (engine !== 'url' && settings.banner) {
         let banner = settings.banner;
         let matches = banner.match(/{(.*?)}/g);
         matches.forEach((match, i) => {
@@ -113,14 +113,47 @@ function domain(url) {
     return hostname;
 }
 
+// helper function used by classifier
+const mostly = (g, group) => g.length / group.elements.length > 0.7;
+
 // removes any groups/elements that are static between pages, pages are cached
 function removeCruftAndClassify(currentResults) {
+    let urlMap = {};
     if (process.env.CACHING) {
         writeCache(engine, 'template', currentResults);
+        return;
+    } else if (engine === 'url') {
+        currentResults.groups.slice(0).forEach(group => {
+            let cruft = [];
+            let jsLink = [];
+            let generic = [];
+            group.elements.forEach(element => {
+                if (dictionary.cruft.includes(element.name.toLowerCase())) {
+                    cruft.push(element);
+                } else if (element.href.slice(0, 11) === "javascript:") {
+                    jsLink.push(element);
+                }
+
+                group.elements.forEach(e => {
+                    urlMap[e.href] = e;
+                })
+            });
+
+            let currentIndex = currentResults.groups.indexOf(group);
+            if (mostly(cruft, group)) {
+                // a lot of generic elements
+                currentResults.groups.splice(currentIndex, 1);
+            } else if (mostly(jsLink, group)) {
+                // a lot of elements that only execute JS, we can't do anything with them yet
+                currentResults.groups.splice(currentIndex, 1);
+            } else if (group.coverage < 30000) {
+                // group is too small to seem significant
+                group.other = true;
+            }
+        });
     } else {
         let cache = readCache(engine, 'template');
         // filter out results based on cache
-        let urlMap = {};
         currentResults.groups.slice(0).forEach(group => {
             let index = findGroupByStyle(cache, group.style);
             let cruft = [];
@@ -156,19 +189,17 @@ function removeCruftAndClassify(currentResults) {
                     })
                 });
 
-                const mostly = (g) => g.length / group.elements.length > 0.7;
-                
                 let currentIndex = currentResults.groups.indexOf(group);
-                if (mostly(cruft)) {
+                if (mostly(cruft, group)) {
                     // a lot of generic elements
                     currentResults.groups.splice(currentIndex, 1);
-                } else if (mostly(jsLink)) {
+                } else if (mostly(jsLink, group)) {
                     // a lot of elements that only execute JS, we can't do anything with them yet
                     currentResults.groups.splice(currentIndex, 1);
                 } else if (!group.pagers && group.elements.length < 2) {
                     // only 1 element in group
                     currentResults.groups.splice(currentIndex, 1);
-                } else if (mostly(generic)) {
+                } else if (mostly(generic, group)) {
                     // group of generically-named components
                     group.generic = true;
                 } else if (group.coverage < (settings.minGroupSize ? settings.minGroupSize : 30000)) {
@@ -181,22 +212,24 @@ function removeCruftAndClassify(currentResults) {
                 })
             }
         })
-        writeCache(engine, 'current', urlMap);
-        return currentResults;
     }
+    writeCache(engine, 'current', urlMap);
+    return currentResults;
 }
 
 // load engine-specific settings
 let settings;
-try {
-    settings = require('./engines/' + engine);
-} catch (e) {
-    if (/Cannot find module/.test(e)) {
-        console.log('No configuration exists for ' + engine);
-    } else {
-        console.log(engine + '.json: ' + e);
+if (engine !== 'url') {
+    try {
+        settings = require('./engines/' + engine);
+    } catch (e) {
+        if (/Cannot find module/.test(e)) {
+            console.log('No configuration exists for ' + engine);
+        } else {
+            console.log(engine + '.json: ' + e);
+        }
+        process.exit(1);
     }
-    process.exit(1);
 }
 
 const isValidUrl = (string) => {
@@ -238,8 +271,15 @@ const isValidUrl = (string) => {
     if (process.env.CACHING) {
         // caching page structure
         await page.goto(settings.query + encodeURIComponent(settings.badQuery));
+    } else if (engine === "url") {
+        // go directly to this page (direct)
+        let url = query;
+        if (!isValidUrl(url)) {
+            url = 'http://' + url;
+        }
+        await page.goto(url);
     } else if (isValidUrl(query) && domain(query) === domain(settings.query)) {
-        // go directly to this page
+        // go directly to this page (navigational)
         await page.goto(query);
     } else {
         // start a new search with query

@@ -13,6 +13,10 @@ Usage
 ```
 interceptor [engine] [query]
 ```
+or
+```
+interceptor url [url]
+```
 
 Result: An FZF query with a set of links from the page classified as follows:
 - golden/yellow: main group (probably results you meant to search for)
