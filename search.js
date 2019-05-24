@@ -113,8 +113,26 @@ function domain(url) {
     return hostname;
 }
 
-// helper function used by classifier
-const mostly = (g, group) => g.length / group.elements.length > 0.7;
+// helper functions used by classifier
+const mostly = (g, group) => g.length / group.elements.length > 0.6;
+function isNavigation(element) {
+    // if (element.name.slice(0, 2) === 'Old')
+    let names = dictionary.navigation.name;
+    let links = dictionary.navigation.href;
+    let elementName = element.name.toLowerCase();
+    let elementHref = element.href.toLowerCase();
+    for (var nameIndex = 0; nameIndex < names.length; nameIndex++) {
+        if (new RegExp(names[nameIndex]).test(elementName)) {
+            // name passes navigation check
+            for (var hrefIndex = 0; hrefIndex < links.length; hrefIndex++) {
+                if (new RegExp(links[hrefIndex]).test(elementHref)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 // removes any groups/elements that are static between pages, pages are cached
 function removeCruftAndClassify(currentResults) {
@@ -130,6 +148,8 @@ function removeCruftAndClassify(currentResults) {
             group.elements.forEach(element => {
                 if (dictionary.cruft.includes(element.name.toLowerCase())) {
                     cruft.push(element);
+                } else if (isNavigation(element)) {
+                    group.pagers = true;
                 } else if (element.href.slice(0, 11) === "javascript:") {
                     jsLink.push(element);
                 }
@@ -183,6 +203,9 @@ function removeCruftAndClassify(currentResults) {
                         }
                     } else if (element.href.slice(0, 11) === "javascript:") {
                         jsLink.push(element);
+                    }
+                    if (isNavigation(element)) {
+                        group.pagers = true;
                     }
                     group.elements.forEach(e => {
                         urlMap[e.href] = e;

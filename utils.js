@@ -67,17 +67,22 @@ let dictionary = {
     // navigation elements/groups
     navigation: {
         name: [
-            '^next',
-            '^prev',
-            '^previous',
-            '^back',
-            '^newer',
-            '^older',
+            '^1$',
+            '^2$',
+            '^3$',
+            '^4$',
+            '^next\\b',
+            '^prev\\b',
+            '^previous\\b',
+            '^back\\b',
+            '^newer\\b',
+            '^older\\b',
         ],
-        hrefHas: [
+        href: [
             '\\bstart=\\d*\\b',
             '\\bpage=\\d*\\b',
-            '\\bp=\\d*\\b'
+            '\\bp=\\d*\\b',
+            '\\bpstart=\\d*\\b',
         ]
     }
 };
