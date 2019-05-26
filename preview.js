@@ -52,8 +52,21 @@ function colorToAnsi(rgb, type) {
 }
 
 // apply style to the element
-function style(element, style) {
-    return colorToAnsi(style.color, 'fg') + element + color.reset;
+function style(element, style, tag) {
+    let rendered = colorToAnsi(style.color, 'fg') + element + color.reset;
+    // console.log(tag)
+    if (/H\d/.test(tag)) {
+        // heading
+        return `\n${color.bright}${rendered}`;
+    // } else if (!/^0px /.test(style.border)) {
+    //     // border
+    //     return `[${rendered}]`;
+    // } else if (style.background !== 'rgba(0, 0, 0, 0)') {
+    //     // background
+    //     let bg = colorToAnsi(style.background, 'fg');
+    //     return `${bg}[${color.reset}${rendered}${bg}]${color.reset}`
+    }
+    return rendered;
 }
 
 // recursive helper for render()
@@ -61,14 +74,17 @@ function _render(context) {
     let text = '';
 
     context.children.forEach(child => {
+        let visible = true;
         if (typeof child === 'string') {
             if (child.trim()) {
-                text += style(child, context.css);
+                text += style(child, context.css, context.tag);
+            } else {
+                visible = false;
             }
         } else {
             text += _render(child);
         }
-        if (context.css.display !== 'inline' && text) {
+        if (visible && context.css.display !== 'inline' && text) {
             text += '\n';
         }
 

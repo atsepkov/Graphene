@@ -47,22 +47,36 @@ let dictionary = {
 
         // menus
         'about',
+        'blog',
+        'contact us',
+        'cookie policy',
+        'feedback',
         'help',
         'home',
+        'jobs',
+        'legal',
         'privacy',
-        'return policy',
         'privacy policy',
+        'return policy',
+        'security',
+        'settings',
         'terms',
         'terms of service',
         'terms of use',
-        'settings',
+
+        // categorization
+        'questions',
+        'tags',
+        'users',
+        'votes',
 
         // media sharing
         'facebook',
+        'linkedin',
+        'reddit',
+        'twitch',
         'twitter',
         'youtube',
-        'twitch',
-        'reddit',
     ],
     // navigation elements/groups
     navigation: {
@@ -71,6 +85,7 @@ let dictionary = {
             '^2$',
             '^3$',
             '^4$',
+            '^5$',
             '^next\\b',
             '^prev\\b',
             '^previous\\b',
@@ -79,17 +94,34 @@ let dictionary = {
             '^older\\b',
         ],
         href: [
-            '\\bstart=\\d*\\b',
-            '\\bpage=\\d*\\b',
-            '\\bp=\\d*\\b',
-            '\\bpstart=\\d*\\b',
+            '\\bstart=\\d+\\b',
+            '\\bpage=\\d+\\b',
+            '\\bp=\\d+\\b',
+            '\\bpstart=\\d+\\b',
         ]
     }
+};
+
+// weights to apply when evaluating significance of each group
+const weights = {
+    context: 2,         // amount of context per element
+    coverage: 1,        // amount of space your elements seem to cover on screen (how spread out they are)
+    area: 1,            // area correlates with things like font size but may break if you stick a large image inside <a> that's not a main group
+    textLength: 1,      // text length is the combined length of all text inside the given group of links
+    numElements: 0,     // number of elements in the group
+}
+
+// minimum thresholds each group has to meet to be considered significant
+const thresholds = {
+    coverage: 30000,
+    numElements: 5,
 };
 
 module.exports = {
     color,
     readCache,
     writeCache,
-    dictionary
+    dictionary,
+    weights,
+    thresholds
 };

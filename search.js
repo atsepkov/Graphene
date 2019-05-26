@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { color, dictionary, readCache, writeCache } = require('./utils');
+const { color, dictionary, readCache, writeCache, weights, thresholds } = require('./utils');
 
 const engine = process.argv[2];
 const query = process.argv[3];
@@ -35,29 +35,31 @@ function banner() {
 }
 
 // output data
-function outputToTerminal(format, data) {
+function outputToTerminal(format, groups) {
     // return if we're just caching
-    if (!data) return;
+    if (!groups) return;
 
     if (format === "json") {
-        console.log(JSON.stringify(data));
+        console.log(JSON.stringify(groups));
     } else if (format === 'shell') {
         var curated = banner() + '\n';
-        data.groups.forEach(function (group, index) {
+
+        groups.forEach(function (group, index) {
             let groupColor;
-            if (index === 0) {
+            if (group.groupType === MAIN) {
                 groupColor = color.yellow;
-            } else if (group.pagers) {
-                groupColor = color.cyan;
-            } else if (group.generic) {
-                groupColor = color.black;
-            } else if (group.other) {
+            } else if (group.groupType === PAGER) {
+                groupColor = color.bright + color.cyan;
+            } else if (group.groupType === GENERIC) {
+                groupColor = color.black + color.bright;
+            } else if (group.groupType === OTHER) {
                 groupColor = color.black + color.bright;
             } else {
                 groupColor = color.white;
             }
 
             group.elements.forEach(function (element) {
+                // curated += group.groupType + ' ' +
                 curated += 
                     groupColor + element.name.replace(/\n/g, ', ').padEnd(parseInt(120 * 2 / 3)) + color.reset + '\t' + 
                     color.blue + color.underscore + element.href + color.reset + (group.pagers ? '\t\t(pager)' : '') + '\n';
@@ -122,10 +124,10 @@ function isNavigation(element) {
     let elementName = element.name.toLowerCase();
     let elementHref = element.href.toLowerCase();
     for (var nameIndex = 0; nameIndex < names.length; nameIndex++) {
-        if (new RegExp(names[nameIndex]).test(elementName)) {
+        if (new RegExp(names[nameIndex], 'u').test(elementName)) {
             // name passes navigation check
             for (var hrefIndex = 0; hrefIndex < links.length; hrefIndex++) {
-                if (new RegExp(links[hrefIndex]).test(elementHref)) {
+                if (new RegExp(links[hrefIndex], 'u').test(elementHref)) {
                     return true;
                 }
             }
@@ -133,6 +135,15 @@ function isNavigation(element) {
     }
     return false;
 }
+
+// constants for group types
+const MAIN =    0;
+const PAGER =   1;
+const CATEGROY =2;
+const CATEGROY2=3;
+const DEFAULT = 4;
+const GENERIC = 5;
+const OTHER =   6;
 
 // removes any groups/elements that are static between pages, pages are cached
 function removeCruftAndClassify(currentResults) {
@@ -142,6 +153,8 @@ function removeCruftAndClassify(currentResults) {
         return;
     } else if (engine === 'url') {
         currentResults.groups.slice(0).forEach(group => {
+            group.groupType = DEFAULT;
+
             let cruft = [];
             let jsLink = [];
             let generic = [];
@@ -149,7 +162,7 @@ function removeCruftAndClassify(currentResults) {
                 if (dictionary.cruft.includes(element.name.toLowerCase())) {
                     cruft.push(element);
                 } else if (isNavigation(element)) {
-                    group.pagers = true;
+                    group.groupType = PAGER;
                 } else if (element.href.slice(0, 11) === "javascript:") {
                     jsLink.push(element);
                 }
@@ -166,19 +179,22 @@ function removeCruftAndClassify(currentResults) {
             } else if (mostly(jsLink, group)) {
                 // a lot of elements that only execute JS, we can't do anything with them yet
                 currentResults.groups.splice(currentIndex, 1);
-            } else if (group.coverage < 30000) {
+            } else if (group.coverage < thresholds.coverage || group.elements.length < thresholds.numElements) {
                 // group is too small to seem significant
-                group.other = true;
+                group.groupType = OTHER;
             }
         });
     } else {
         let cache = readCache(engine, 'template');
         // filter out results based on cache
         currentResults.groups.slice(0).forEach(group => {
+            group.groupType = DEFAULT;
+
             let index = findGroupByStyle(cache, group.style);
             let cruft = [];
             let jsLink = [];
             let generic = [];
+            let currentIndex = currentResults.groups.indexOf(group);
             if (index !== -1) {
                 let cachedGroup = cache.groups[index];
                 group.elements.forEach(element => {
@@ -189,6 +205,8 @@ function removeCruftAndClassify(currentResults) {
                         if (found.href === element.href || !found.name) {
                             // 100% cruft (url and name match)
                             cruft.push(found);
+                        } else if (dictionary.cruft.includes(element.name.toLowerCase())) {
+                            cruft.push(found);
                         } else {
                             // generic navigational component that may be related to current search
                             // (name matches, url does not)
@@ -198,46 +216,70 @@ function removeCruftAndClassify(currentResults) {
                                 domain(element.href) === domain(settings.query)
                             ) {
                                 // this is a pager group
-                                group.pagers = true;
+                                group.groupType = PAGER;
                             }
                         }
                     } else if (element.href.slice(0, 11) === "javascript:") {
                         jsLink.push(element);
                     }
                     if (isNavigation(element)) {
-                        group.pagers = true;
+                        group.groupType = PAGER;
                     }
                     group.elements.forEach(e => {
                         urlMap[e.href] = e;
                     })
                 });
 
-                let currentIndex = currentResults.groups.indexOf(group);
                 if (mostly(cruft, group)) {
                     // a lot of generic elements
-                    currentResults.groups.splice(currentIndex, 1);
-                } else if (mostly(jsLink, group)) {
-                    // a lot of elements that only execute JS, we can't do anything with them yet
                     currentResults.groups.splice(currentIndex, 1);
                 } else if (!group.pagers && group.elements.length < 2) {
                     // only 1 element in group
                     currentResults.groups.splice(currentIndex, 1);
-                } else if (mostly(generic, group)) {
+                } else if (mostly(generic, group) && group.groupType !== PAGER) {
                     // group of generically-named components
-                    group.generic = true;
-                } else if (group.coverage < (settings.minGroupSize ? settings.minGroupSize : 30000)) {
-                    // group is too small to seem significant
-                    group.other = true;
+                    group.groupType = GENERIC;
                 }
             } else {
                 group.elements.forEach(e => {
                     urlMap[e.href] = e;
+                    if (isNavigation(e)) {
+                        // this is needed for now since we're going off of bad query, since the query may not yield
+                        // other pages, as we improve caching logic, we can probbaly remove this
+                        group.groupType = PAGER;
+                    } else if (e.href.slice(0, 11) === "javascript:") {
+                        jsLink.push(e);
+                    }
                 })
+            }
+
+            // further classify the group
+            if (mostly(jsLink, group)) {
+                // a lot of elements that only execute JS, we can't do anything with them yet
+                currentResults.groups.splice(currentIndex, 1);
+            } else if (
+                group.groupType !== PAGER && (
+                    group.coverage < (settings.minGroupSize ? settings.minGroupSize : thresholds.coverage) ||
+                    group.elements.length < thresholds.numElements
+                )
+            ) {
+                // group is too small to seem significant
+                //group.groupType = OTHER;
             }
         })
     }
     writeCache(engine, 'current', urlMap);
-    return currentResults;
+
+    // find main group
+    let groupIndex = 0;
+    while (groupIndex < currentResults.groups.length) {
+        if (currentResults.groups[groupIndex].groupType === DEFAULT) {
+            currentResults.groups[groupIndex].groupType = MAIN;
+            break;
+        }
+    }
+
+    return currentResults.groups.sort((a, b) => a.groupType - b.groupType);
 }
 
 // load engine-specific settings
@@ -310,7 +352,7 @@ const isValidUrl = (string) => {
         await page.goto(settings.query + encodeURIComponent(query) + modifier);
     }
     // await page.screenshot({path: 'example.png'});
-    let results = await page.evaluate((columns) => {
+    let results = await page.evaluate((columns, weights, settings) => {
 
         /** LIST OF LOGIC TO BE USED */
 
@@ -354,6 +396,7 @@ const isValidUrl = (string) => {
                 fontFamily: style.fontFamily, 
                 fontWeight: style.fontWeight, 
                 color: style.color,
+                background: style.backgroundColor,
                 border: style.border, 
                 visible: isVisible(element),
                 display: style.display,
@@ -526,8 +569,13 @@ const isValidUrl = (string) => {
         let metrics = {
             'max-area': 0,
             'max-coverage': 0,
-            'max-textLength': 0
+            'max-textLength': 0,
+            'max-context': 0
         };
+        // gather metrics
+        const updateMax = (group, type) => {
+            metrics['max-' + type] = Math.max(metrics['max-' + type], group[type]);
+        }
 
         // group a list of DOM elements by visual style
         function groupByStyle(elements) {
@@ -572,10 +620,6 @@ const isValidUrl = (string) => {
                 });
             });
 
-            // gather metrics
-            const updateMax = (group, type) => {
-                metrics['max-' + type] = Math.max(metrics['max-' + type], group[type]);
-            }
             groups.forEach(group => {
                 group.textLength = group.elements.reduce((a, v) => { return a + v.name.length }, 0);
 
@@ -588,18 +632,17 @@ const isValidUrl = (string) => {
         }
 
         // helper logic for normalizing significance params and applying weights
-        const weights = {
-            coverage: 1,    // coverage is the amount of space your elements seem to cover on screen (how spread out they are)
-            area: 1,        // area correlates with things like font size but may break if you stick a large image inside <a> that's not a main group
-            textLength: 1   // text length is the combined length of all text inside the given group of links
-        }
         const weigh = (group, field) => {
-            return weights[field] * group[field] / metrics['max-' + field];
+            let weight = weights[field];
+            if (settings && settings.weights && settings.weights[field]) {
+                weight = settings.weights[field];
+            }
+            return weight * group[field] / metrics['max-' + field];
         }
 
         // returns relative significance of the group based on a number of heuristics
         function significance(group) {
-            return weigh(group, 'coverage') + weigh(group, 'area') + weigh(group, 'textLength');
+            return weigh(group, 'coverage') + weigh(group, 'area') + weigh(group, 'textLength') + weigh(group, 'context');
         }
 
 
@@ -619,18 +662,22 @@ const isValidUrl = (string) => {
         }
 
         // fill in extra context for better preview later
-        let groups = groupByStyle(relevant).sort((a, b) => significance(a) < significance(b) ? 1 : -1);
+        let groups = groupByStyle(relevant);
         groups.forEach(group => {
             let parents = expandSelection(group.elements);
+            group.context = 0;
             group.elements.forEach((element, index) => {
                 element.context = getRenderDetail(parents[index]);
+                group.context += parents[index].innerText.length;
             });
+            updateMax(group, 'context');
         });
+        groups = groups.sort((a, b) => significance(a) < significance(b) ? 1 : -1);
 
         return {
             groups: groups
         };
-    }, process.stdout.columns);
+    }, process.stdout.columns, weights, settings);
 
     outputToTerminal('shell', removeCruftAndClassify(results));
 
