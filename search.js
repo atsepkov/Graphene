@@ -62,7 +62,7 @@ function outputToTerminal(format, groups) {
                 // curated += group.groupType + ' ' +
                 curated += 
                     groupColor + element.name.replace(/\n/g, ', ').padEnd(parseInt(120 * 2 / 3)) + color.reset + '\t' + 
-                    color.blue + color.underscore + element.href + color.reset + (group.pagers ? '\t\t(pager)' : '') + '\n';
+                    color.blue + color.underscore + element.href + color.reset + (group.groupType === PAGER ? '\t\t(pager)' : '') + '\n';
             });
         });        
         console.log(curated);
