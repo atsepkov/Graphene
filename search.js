@@ -59,10 +59,11 @@ function outputToTerminal(format, groups) {
             }
 
             group.elements.forEach(function (element) {
-                // curated += group.groupType + ' ' +
-                curated += 
-                    groupColor + element.name.replace(/\n/g, ', ').padEnd(parseInt(120 * 2 / 3)) + color.reset + '\t' + 
-                    color.blue + color.underscore + element.href + color.reset + (group.groupType === PAGER ? '\t\t(pager)' : '') + '\n';
+                if (!process.env.ONLY_MAIN || group.groupType === MAIN || group.groupType === PAGER) {
+                    curated += 
+                        groupColor + element.name.replace(/\n/g, ', ').padEnd(parseInt(120 * 2 / 3)) + color.reset + '\t' + 
+                        color.blue + color.underscore + element.href + color.reset + (group.groupType === PAGER ? '\t\t(pager)' : '') + '\n';
+                }
             });
         });        
         console.log(curated);

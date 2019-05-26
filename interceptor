@@ -8,6 +8,7 @@ display_usage() {
     echo -e "Options:\n"
     echo -e "\t-h, --help\t\tPrint this help message and exit.\n"
     echo -e "\t-r [number]\t\tNumber of results you want the search to return (not all engines will respect this).\n"
+    echo -e "\t-o\t\t\tShow only the main result group, and omit all other groups.\n"
 } 
 
 show_search() {
@@ -37,7 +38,7 @@ if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
-while getopts ":hr:" opt; do
+while getopts ":hr:o" opt; do
     case $opt in
         h|help)  # help
             display_usage
@@ -45,6 +46,9 @@ while getopts ":hr:" opt; do
             ;;
         r|results)  # number of results to prefer
             export RESULTS=$OPTARG; shift
+            ;;
+        o|only)  # number of results to prefer
+            export ONLY_MAIN=1; shift
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2

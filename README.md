@@ -1,5 +1,7 @@
-Interceptor Browser
-===================
+Interceptor Text Browser
+========================
+![Screenshot](screenshots/stackoverflow.png)
+
 This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal. It's still a work in progress,
 but works decently well. The original inspiration for this project was Ranger File Manager, but after realizing that adapting it from local browsing to
 the web would require a significant rewrite, I put the project aside. Then, a couple months later, I stumbled into FZF, and figured I'd give this tool
