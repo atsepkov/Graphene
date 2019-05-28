@@ -2,7 +2,9 @@ Graphene Text Browser
 ========================
 ![Screenshot](screenshots/stackoverflow.png)
 
-This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal. It's still a work in progress,
+This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal in a style that makes the most
+sense in the terminal. It does not try to emulate a GUI browser in the terminal like some of the other projects, because the terminal was not meant
+for that, and that just creates a miserable experience for the user. It's still a work in progress,
 but works decently well. The original inspiration for this project was Ranger File Manager, but after realizing that adapting it from local browsing to
 the web would require a significant rewrite, I put the project aside. Then, a couple months later, I stumbled into FZF, and figured I'd give this tool
 a try again using FZF instead of Ranger as a way to represent results. And this is the result.
@@ -55,14 +57,14 @@ Roadmap
 I've built this mainly for myself, the initial set of features are mainly driven by my own use case an aesthetics. What I would like to add (when time allows):
 
 - Identification of categorizing components (tags (github, npm), search subtypes (github, google, amazon)).
+- Authentication/login (i.e. for searching your email).
 - Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
 - Use of `goodQuery` setting to improve initial calibration.
 
 Configuration
 =============
 If you want to add a new engine that I haven't included, look at an example of an existing engine in `engines` directory and customize it accordingly.
-The only required fields are `query` (url used to formulate a search query) and `pager` (style/name hints the system uses to identify the pager - 
-navigational link that goes to next page of search results). For best results, you should fill in as many parameters for the engine as possible.
+The only required field is `query` (url used to formulate a search query). For best results, you should fill in as many parameters for the engine as possible.
 If your engine works well, feel free to contribute it back to this repository. Here is an explanation of each field:
 
 ```
