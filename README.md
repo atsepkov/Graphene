@@ -1,4 +1,4 @@
-Interceptor Text Browser
+Graphene Text Browser
 ========================
 ![Screenshot](screenshots/stackoverflow.png)
 
@@ -13,11 +13,11 @@ browser if you found the result you want. This also cuts down distractions that 
 Usage
 =====
 ```
-interceptor [engine] [query]
+graphene [engine] [query]
 ```
 or
 ```
-interceptor url [url]
+graphene url [url]
 ```
 
 Result: An FZF query with a set of links from the page classified as follows:
@@ -29,16 +29,52 @@ Result: An FZF query with a set of links from the page classified as follows:
 Selecting a result will open it in your browser of choice, unless the result is a navigational (cyan) link, which will re-trigger the search with new
 offset.
 
-If you want to add a new engine that I haven't included, look at an example of an existing engine in `engines` directory and customize it accordingly.
-The only required fields are `query` (url used to formulate a search query) and `pager` (style/name hints the system uses to identify the pager - 
-navigational link that goes to next page of search results). For best results, you should fill in as many parameters for the engine as possible.
-If your engine works well, feel free to contribute it back to this repository.
-
 Dependencies
 =====
 - FZF
 - node.js
 - puppeteer 
+
+Roadmap
+=======
+I've built this mainly for myself, the initial set of features are mainly driven by my own use case an aesthetics. What I would like to add (when time allows):
+
+- Identification of categorizing components (tags (github, npm), search subtypes (github, google, amazon)).
+- Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
+- Use of `goodQuery` setting to improve initial calibration.
+
+Configuration
+=============
+If you want to add a new engine that I haven't included, look at an example of an existing engine in `engines` directory and customize it accordingly.
+The only required fields are `query` (url used to formulate a search query) and `pager` (style/name hints the system uses to identify the pager - 
+navigational link that goes to next page of search results). For best results, you should fill in as many parameters for the engine as possible.
+If your engine works well, feel free to contribute it back to this repository. Here is an explanation of each field:
+
+```
+{
+    "banner": "Banner you want displayed to the user performing the search",
+	"query": "URL used by the engine as point of entry",
+    "goodQuery": "Example of a good query that yields a lot of results (not yet used for calibration)",
+    "badQuery": "Example of a bad query that yields few or no results",
+    "pager": {
+        "name": "Name to search for to identify navigational component (i.e. next/prev page of results)",
+        "href": "Unique field in URL to search for that correlates to navigational offset (i.e. page=, start=, etc.)"
+    },
+    "weights": {
+        "context": 2,         // Amount of context per element.
+        "coverage": 1,        // Amount of space your elements seem to cover on screen (how spread out they are).
+        "area": 1,            // Area correlates with things like font size but may break if you stick a large image inside <a> that's not a main group.
+        "textLength": 1,      // Text length is the combined length of all text inside the given group of links.
+        "numElements": 0,     // Number of elements in the group, higher weight means groups with more elements will be preferred.
+    }
+}
+```
+
+Queries are used to calibrate the caching mechanism. Pager info is optional (there is a well functioning set of defaults) and is meant for websites where
+defaults. Weights are numeric values (these can be integers or floating point) used to calibrate the browser's determination of search result significance
+for specific website. For a regular search engine like Google, results would have longer text length and have more contextual text to summarize the result.
+For an image-based search engine like Amazon, area taken up by results may be more significant. If your engine is misclassifying the main group, play with
+the weights to adjust it.
 
 FAQ
 ===
