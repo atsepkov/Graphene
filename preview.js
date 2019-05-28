@@ -9,7 +9,7 @@ const preview_location = '/tmp/_web_preview.png';
 // split a long string into shorter chunks
 function stringToChunks(str, size) {
     const numChunks = Math.ceil(str.length / size);
-    const chunks = [numChunks];
+    const chunks = [];
 
     for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
         chunks[i] = str.substr(o, size);
@@ -103,10 +103,11 @@ function render(data) {
 
     let output = _render(data.context); 
 
-    let maxLen = parseInt(process.env.COLUMNS * 0.4); // 40% of the window
+    let border = 4;
+    let maxLen = parseInt(process.env.COLUMNS * 0.4) - border; // 40% of the window
     let lines = output.split('\n');
     lines.forEach(l => {
-        let chunks = stringToChunks(l, maxLen);
+        let chunks = stringToChunks(l.trim(), maxLen);
         chunks.forEach(c => {
             c && console.log(c);
         });
