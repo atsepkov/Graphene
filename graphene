@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 display_usage() { 
 	echo -e "\nUsage: $0 [options] [engine] [query]"
     echo -e "       Search for [query] using specified search engine."
@@ -18,7 +20,7 @@ show_search() {
 
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
-    bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node preview.js $engine {}")"
+    bash $DIR/open.sh $engine "$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
 }
 
 # populates caches for all engines this script is aware of
@@ -29,7 +31,7 @@ initialize() {
     echo "Rebuilding cache for $engine..."
     mkdir -p .cache
     export CACHING=1
-    node search.js $engine
+    node $DIR/search.js $engine
     unset CACHING
 }
 
@@ -58,7 +60,7 @@ while getopts ":hr:o" opt; do
 done
 
 if [ "$1" != "url" ]; then
-    if [ ! -d .cache ] || [ ! -f .cache/$1-template.json ]; then
+    if [ ! -d $DIR/.cache ] || [ ! -f $DIR/.cache/$1-template.json ]; then
         initialize $1
     fi
 fi

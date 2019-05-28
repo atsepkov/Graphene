@@ -94,8 +94,13 @@ function _render(context) {
 }
 
 function render(data) {
-    // console.log(url);
     console.log(color.blue + color.underscore + url + color.reset);
+    
+    if (data.error) {
+        console.log(color.red + data.error + color.reset);
+        return;
+    }
+
     let output = _render(data.context); 
 
     let maxLen = parseInt(process.env.COLUMNS * 0.4); // 40% of the window
@@ -109,14 +114,16 @@ function render(data) {
 }
 
 let cache = readCache(engine, 'current');
-render(cache[url]);
-/*(async () => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url);
-    // await page.screenshot({path: preview_location});
-    // console.log(preview_location);
-
-    await browser.close();
-})();*/
-
+if (Object.keys(cache).length) {
+    if (cache[url]) {
+        render(cache[url]);
+    } else {
+        render({
+            error: 'There was a problem fetching preview for this result.',
+        })
+    }
+} else {
+    render({
+        error: 'Preview file could not be loaded.',
+    })
+}

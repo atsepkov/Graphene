@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require("path");
 
 // color scheme
 const color = {
@@ -30,7 +31,7 @@ function readCache(engine, type) {
 
 // writes page as a cache file to disk
 function writeCache(engine, type, json) {
-    fs.writeFileSync('.cache/' + engine + '-' + type + '.json', JSON.stringify(json));
+    fs.writeFileSync(path.resolve(__dirname, './.cache/' + engine + '-' + type + '.json'), JSON.stringify(json));
 };
 
 // dictionary of common element names

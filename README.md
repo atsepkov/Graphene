@@ -113,11 +113,9 @@ several times per week). This aggregator doesn't care about changes like that, i
 even if the engine decides to change the page in a significant way, the aggregator should be able to adapt to it after clearing your old cache.
 
 #### Can this profile a page that's not a search engine?
-In theory yes, in practice I haven't tried yet. You can pass an exact URL instead of the query to open, at which point the aggregator technically does not
-need the query. You still need to specify an engine to use, however, to use for caching. If you have an idea for how to build a cache for a page that's not
-a search engine, feel free to contribute to this project or open an issue. The main use of the cache is that it profiles cruft/navigational components.
-Problem is a webpage that is not a search engine will not have the main results change between "searches" either, hence the caching logic will classify actual
-results as cruft as well.
+Yes it can, and it falls back to defaults, which usually work well but may epic-fail on some websites. You can pass an exact URL instead of the query to open.
+Instead of engine, use `url` keyword. This seems to work with websites like Slashdot, with Reddit it fails to find the pager (which loads dynamically via scroll).
+If you have ideas for how to handle this case or other improvements, feel free to contribute.
 
 #### Does this comply with terms of use for the websites being aggregated?
 Most websites should be fine with it (especially since I'm not explicitly blocking ads - they'd just get classified into one of the less relevant categories).
