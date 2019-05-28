@@ -29,11 +29,26 @@ Result: An FZF query with a set of links from the page classified as follows:
 Selecting a result will open it in your browser of choice, unless the result is a navigational (cyan) link, which will re-trigger the search with new
 offset.
 
-Dependencies
-=====
+Installation
+============
+Project currently uses the following dependencies:
+
 - FZF
 - node.js
-- puppeteer 
+- puppeteer
+
+To install on OSX/Linux:
+
+```
+brew/apt-get/dnf install fzf
+npm install puppeteer
+```
+
+Add the project directory to `$PATH`, i.e. by adding this to your `.bash_profile`:
+
+```
+export PATH="/path/to/graphene:$PATH"
+```
 
 Roadmap
 =======
