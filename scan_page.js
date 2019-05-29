@@ -13,6 +13,7 @@ const url = process.argv[2];
     });
 
     writeCache('_result_', 'preview', {
+        url: url,
         content: content
     });
     content.split('\n').forEach((line, index) => {
