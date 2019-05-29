@@ -20,7 +20,7 @@ show_search() {
 
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --preview="node preview.js {} | xargs cat | ~/.iterm2/imgcat")"
     # bash open.sh $engine "$(node search.js $engine "$query" | fzf --reverse --ansi --header-lines=1 --preview="node preview.js {} | xargs /Users/alexander.tsepkov/work/personal/Prevu/Prevu/Prevu.app/Contents/MacOS/Prevu")"
-    bash $DIR/open.sh $engine "$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
+    bash $DIR/open.sh $engine "$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --bind 'f1:execute(bash open_in_graphene.sh {})+abort,f2:toggle-preview' --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
 }
 
 # populates caches for all engines this script is aware of
