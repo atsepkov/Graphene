@@ -61,6 +61,8 @@ I've built this mainly for myself, the initial set of features are mainly driven
 - Authentication/login (i.e. for searching your email).
 - Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
 - Use of `goodQuery` setting to improve initial calibration.
+- Ability to extract key text from an arbitrary web page (fetching result in terminal - i.e. HTML->markdown).
+- Browser history.
 
 Configuration
 =============
@@ -71,7 +73,7 @@ If your engine works well, feel free to contribute it back to this repository. H
 ```
 {
     "banner": "Banner you want displayed to the user performing the search",
-	"query": "URL used by the engine as point of entry",
+    "query": "URL used by the engine as point of entry",
     "goodQuery": "Example of a good query that yields a lot of results (not yet used for calibration)",
     "badQuery": "Example of a bad query that yields few or no results",
     "pager": {
@@ -100,6 +102,16 @@ FAQ
 #### Will this work with any search engine/website?
 Probably not, but it has worked with more than I expected, and will continue to improve.
 
+#### Can this profile a page that's not a search engine?
+Yes it can, and it falls back to defaults, which usually work well but may epic-fail on some websites. You can pass an exact URL instead of the query to open.
+Instead of engine, use `url` keyword. This seems to work with websites like Slashdot, with Reddit it fails to find the pager (which loads dynamically via scroll).
+If you have ideas for how to handle this case or other improvements, feel free to contribute.
+
+#### Will this work if I point it to a specific news story or blog entry via `url` keyword?
+Not right now, this is not meant to be a complete replacement for your regular browser. It's designed to process aggregate-based webpages and extracting key
+information for each link. It will not extract arbitrary text in the middle of the page. Enhancing it in such a way in the future is feasible, however. The
+use case would be fetching technical documents for websites like MDN without leaving the terminal.
+
 #### How does it work? How does it know which groups are signfiicant and which is the main one?
 It uses heuristics similar to what a human would do when navigating to a page. Groups that take up more visual space on the page are deemed more important.
 Groups whose elements don't change at all between searches are deemed unimportant, groups whose names don't change but urls do are navigational (they apply
@@ -111,11 +123,6 @@ and therefore harder to fool. For example, Google runs some sort of uglifier on 
 stay consistent between searches (giving you the illusion of your selector working), but change every time Google redeploys their frontend (which happens
 several times per week). This aggregator doesn't care about changes like that, it analyzes link significance on the page the same way a human would. Moreover,
 even if the engine decides to change the page in a significant way, the aggregator should be able to adapt to it after clearing your old cache.
-
-#### Can this profile a page that's not a search engine?
-Yes it can, and it falls back to defaults, which usually work well but may epic-fail on some websites. You can pass an exact URL instead of the query to open.
-Instead of engine, use `url` keyword. This seems to work with websites like Slashdot, with Reddit it fails to find the pager (which loads dynamically via scroll).
-If you have ideas for how to handle this case or other improvements, feel free to contribute.
 
 #### Does this comply with terms of use for the websites being aggregated?
 Most websites should be fine with it (especially since I'm not explicitly blocking ads - they'd just get classified into one of the less relevant categories).
