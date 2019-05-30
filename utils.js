@@ -34,6 +34,19 @@ function writeCache(engine, type, json) {
     fs.writeFileSync(path.resolve(__dirname, './.cache/' + engine + '-' + type + '.json'), JSON.stringify(json));
 };
 
+// split a long string into shorter chunks
+function stringToChunks(str, size) {
+    const numChunks = Math.ceil(str.length / size);
+    const chunks = [];
+
+    for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+        chunks[i] = str.substr(o, size);
+    }
+
+    return chunks;
+}
+
+
 // dictionary of common element names
 let dictionary = {
     // groups that are typically not actionable from terminal
@@ -123,6 +136,7 @@ module.exports = {
     readCache,
     writeCache,
     dictionary,
+    stringToChunks,
     weights,
     thresholds
 };

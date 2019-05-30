@@ -2,21 +2,8 @@ const puppeteer = require('puppeteer');
 const engine = process.argv[2];
 const entry = process.argv[3];
 const url = entry.match(/\bhttps?:\/\/\S+/gi)[0];
-const { color, readCache } = require('./utils');
+const { color, readCache, stringToChunks } = require('./utils');
 const preview_location = '/tmp/_web_preview.png';
-
-
-// split a long string into shorter chunks
-function stringToChunks(str, size) {
-    const numChunks = Math.ceil(str.length / size);
-    const chunks = [];
-
-    for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-        chunks[i] = str.substr(o, size);
-    }
-
-    return chunks;
-}
 
 function showShortcuts() {
     const k = (key, msg) => { console.log(color.black + color.bright + `\t${key}\t${msg}` + color.reset) };

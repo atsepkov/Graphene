@@ -61,7 +61,6 @@ I've built this mainly for myself, the initial set of features are mainly driven
 - Authentication/login (i.e. for searching your email).
 - Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
 - Use of `goodQuery` setting to improve initial calibration.
-- Ability to extract key text from an arbitrary web page (fetching result in terminal - i.e. HTML->markdown).
 - Browser history.
 
 Configuration
@@ -108,9 +107,8 @@ Instead of engine, use `url` keyword. This seems to work with websites like Slas
 If you have ideas for how to handle this case or other improvements, feel free to contribute.
 
 #### Will this work if I point it to a specific news story or blog entry via `url` keyword?
-Not right now, this is not meant to be a complete replacement for your regular browser. It's designed to process aggregate-based webpages and extracting key
-information for each link. It will not extract arbitrary text in the middle of the page. Enhancing it in such a way in the future is feasible, however. The
-use case would be fetching technical documents for websites like MDN without leaving the terminal.
+Not yet, but almost. This is not meant to be a complete replacement for your regular browser. It's designed to process aggregate-based webpages and extracting key
+information for each link. It can extract arbitrary text from a webpage and render it as markdown, but for now you need to drive from an aggregate website first.
 
 #### How does it work? How does it know which groups are signfiicant and which is the main one?
 It uses heuristics similar to what a human would do when navigating to a page. Groups that take up more visual space on the page are deemed more important.
