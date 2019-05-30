@@ -22,7 +22,7 @@ const url = process.argv[2];
         content: content.split('\n')
     });
     content.split('\n').forEach((line, index) => {
-        console.log(`${color.bright + color.black}${('' + index).padEnd(3)}${color.reset}${line}`);
+        console.log(`${color.bright}\x1b[38;5;237m${('' + index).padEnd(3)}${color.reset}\x1b[38;5;244m${line}${color.reset}`);
     })
 
     await browser.close();

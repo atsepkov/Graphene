@@ -36,11 +36,23 @@ function writeCache(engine, type, json) {
 
 // split a long string into shorter chunks
 function stringToChunks(str, size) {
-    const numChunks = Math.ceil(str.length / size);
+    // const numChunks = Math.ceil(str.length / size);
     const chunks = [];
 
-    for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-        chunks[i] = str.substr(o, size);
+    let index = 0;
+    while (str.length && index < str.length - 1) {
+        let line = str.substr(index, size);
+        index += size;
+        if (index < str.length - 1 && str[index-1] !== ' ' && str[index] !== ' ') {
+            // we're mid-word
+            let offset = 0
+            while (index && str[index-1] !== ' ') {
+                index--;
+                offset++;
+            }
+            line = line.substr(0, line.length-offset);
+        }
+        chunks.push(line);
     }
 
     return chunks;
