@@ -60,7 +60,7 @@ function pretty(line, next, highlight) {
     }
 
     if (highlight) {
-        line = color.underscore + line;
+        line = color.bright + line;
     }
 
     /*let chunks = stringToChunks(line, maxLen);

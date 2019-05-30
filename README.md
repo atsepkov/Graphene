@@ -1,6 +1,6 @@
 Graphene Text Browser
 ========================
-![Screenshot](screenshots/stackoverflow.png)
+[![Graphene Demo](https://asciinema.org/a/249148.svg)](https://asciinema.org/a/249148)
 
 This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal in a style that makes the most
 sense in the terminal. It does not try to emulate a GUI browser in the terminal or replace it, because the terminal was not meant for that, and that
