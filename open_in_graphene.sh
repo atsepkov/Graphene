@@ -12,7 +12,7 @@ url=$(echo $line | sed 's#.*\(https*://\)#\1#')
 show_result() {
     local url
     url="$1"
-    bash $DIR/open.sh $engine "$(node $DIR/scan_page.js "$url" | fzf --reverse --ansi --preview-window=right:80% --preview="node $DIR/preview_full.js {}")"
+    echo "$(node $DIR/scan_page.js "$url" | fzf --reverse --ansi --preview-window=right:80% --preview="node $DIR/preview_full.js {}" && echo $url)"
 }
 
 show_result "$url"
