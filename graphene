@@ -14,11 +14,15 @@ display_usage() {
 } 
 
 show_search() {
-    local engine query
+    local engine query controls selection 
     engine=$1
     query="$2"
 
-    bash $DIR/open.sh $engine "$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --bind "f1:execute(bash $DIR/open_in_graphene.sh {}),f2:toggle-preview" --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
+    controls="f1:execute(bash $DIR/open_in_graphene.sh {}),f2:toggle-preview"
+    selection="$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --bind "$controls" --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
+    if [ ! -z "$selection" ]; then
+        bash $DIR/open.sh $engine "$selection"
+    fi
 }
 
 # populates caches for all engines this script is aware of
