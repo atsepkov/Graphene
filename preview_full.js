@@ -14,16 +14,16 @@ function computeOffset(n) {
 let border = 4;
 let maxLen = parseInt(process.env.COLUMNS * 0.8) - border; // 80% of the window
 function pretty(line, next, highlight) {
+
+    // urls
+    line = line.replace(/\[(.*?)\]\(.*?\)/g, color.blue + '$1' + color.reset);
+
     if (next.slice(0,3) === '===' || next.slice(0, 3) === '---' || line.slice(0, 3) === '===' || line.slice(0, 3) === '---') {
         // main header
         line = color.yellow + color.bright + line + color.reset;
     } else if (line[0] === '#') {
         // header
         line = color.yellow + color.bright + line + color.reset;
-    } else if (/(?:__|[*#])|\[(.*?)\]\(.*?\)/.test(line)) {
-        // url
-        line = line.replace(/(?:__|[*#])|\[(.*?)\]\(.*?\)/g, color.blue + '$1' + color.reset);
-        // line = color.blue + color.bright + line + color.reset;
     } else if (/^\s{4}[^*]/.test(line)) {
         // codeblock
         line = color.green + line + color.reset;
