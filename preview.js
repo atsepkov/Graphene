@@ -18,6 +18,16 @@ function stringToChunks(str, size) {
     return chunks;
 }
 
+function showShortcuts() {
+    const k = (key, msg) => { console.log(color.black + color.bright + `\t${key}\t${msg}` + color.reset) };
+
+    console.log('');
+    k('F1', 'Open result in Graphene');
+    k('F2', 'Hide/show preview window');
+    k('Enter', 'Open result in GUI browser');
+    console.log('');
+}
+
 // convert HEX code to ANSI
 function colorToAnsi(rgb, type) {
     let code = type === 'fg' ? '38' : '48';
@@ -95,6 +105,7 @@ function _render(context) {
 
 function render(data) {
     console.log(color.blue + color.underscore + url + color.reset);
+    showShortcuts();
     
     if (data.error) {
         console.log(color.red + data.error + color.reset);
