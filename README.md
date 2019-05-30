@@ -30,7 +30,12 @@ Result: An FZF query with a set of links from the page classified as follows:
 - cyan: navigational links that will result in query to be reperformed instead of opening the page
 
 Selecting a result will open it in your browser of choice, unless the result is a navigational (cyan) link, which will re-trigger the search with new
-offset.
+offset. Pressing `F1` will instead load the result as markdown version of the page in Graphene (for text-based pages this works well and often can 
+avoid the unnecessary hop to a browser).
+
+While previewing the page via `F1`, you can navigate/search the page using search patterns or simple scrolling. For example, typing `#` will filter
+all page headings as search results, effectivelly creating a table of contents for the page. Similarly, typing `` ` `` will filter all code blocks
+(useful for navigating directly to the example on websites like MDN).
 
 Installation
 ============

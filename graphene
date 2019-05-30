@@ -19,7 +19,7 @@ show_search() {
     query="$2"
 
     controls="f1:execute(bash $DIR/open_in_graphene.sh {}),f2:toggle-preview"
-    selection="$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --bind "$controls" --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
+    selection="$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --tiebreak=begin,index --bind "$controls" --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
     if [ ! -z "$selection" ]; then
         bash $DIR/open.sh $engine "$selection"
     fi
