@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { color, dictionary, readCache, writeCache, weights, thresholds } = require('./utils');
+const { color, dictionary, readCache, writeCache, writeHistory, weights, thresholds } = require('./utils');
 
 const engine = process.argv[2];
 const query = process.argv[3];
@@ -344,13 +344,17 @@ const isValidUrl = (string) => {
             url = 'http://' + url;
         }
         await page.goto(url);
+        writeHistory(url, 'U', true);
     } else if (isValidUrl(query) && domain(query) === domain(settings.query)) {
         // go directly to this page (navigational)
         await page.goto(query);
+        writeHistory(query, 'N');
     } else {
         // start a new search with query
         let modifier = settings.resultModifier ? settings.resultModifier + (process.env.RESULTS || settings.resultsPerPage || 20) : '';
-        await page.goto(settings.query + encodeURIComponent(query) + modifier);
+        let searchQuery = settings.query + encodeURIComponent(query) + modifier;
+        await page.goto(searchQuery);
+        writeHistory(searchQuery, 'S', true);
     }
     // await page.screenshot({path: 'example.png'});
     let results = await page.evaluate((columns, weights, settings) => {

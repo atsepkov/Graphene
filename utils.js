@@ -34,6 +34,17 @@ function writeCache(engine, type, json) {
     fs.writeFileSync(path.resolve(__dirname, './.cache/' + engine + '-' + type + '.json'), JSON.stringify(json));
 };
 
+// writes entry to history file
+// types: S (search), U (url), N (navigational), R (result), X (external)
+function writeHistory(url, type, initial=false) {
+    let time = Date.now();
+    fs.appendFile(path.resolve(__dirname, './.cache/history'), `${initial ? '' : '    '}${time} ${type} ${url}\n`, (err) => {
+        if (err) {
+            throw err;
+        }
+    });
+}
+
 // split a long string into shorter chunks
 function stringToChunks(str, size) {
     // const numChunks = Math.ceil(str.length / size);
@@ -294,6 +305,7 @@ module.exports = {
     color,
     readCache,
     writeCache,
+    writeHistory,
     dictionary,
     stringToChunks,
     weights,

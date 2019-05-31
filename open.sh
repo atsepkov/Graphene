@@ -8,4 +8,5 @@ if [[ "$line" =~ \(pager\)$ ]]; then
     bash $DIR/graphene $engine $url
 else
     open $url
+    node -e "require('$DIR/utils').writeHistory('$url', 'X')"
 fi

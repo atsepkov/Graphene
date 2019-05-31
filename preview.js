@@ -4,6 +4,7 @@ const entry = process.argv[3];
 const url = entry.match(/\bhttps?:\/\/\S+/gi)[0];
 const { color, readCache, stringToChunks } = require('./utils');
 const preview_location = '/tmp/_web_preview.png';
+const isPager = /\(pager\)$/.test(entry);
 
 function showShortcuts() {
     const k = (key, msg) => { console.log(color.black + color.bright + `\t${key}\t${msg}` + color.reset) };
@@ -11,7 +12,7 @@ function showShortcuts() {
     console.log('');
     k('F1', 'Open result in Graphene');
     k('F2', 'Hide/show preview window');
-    k('Enter', 'Open result in GUI browser');
+    k('Enter', isPager ? 'Fetch next page of results' : 'Open result in GUI browser');
     console.log('');
 }
 

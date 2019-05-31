@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { color, readCache, writeCache } = require('./utils');
+const { color, readCache, writeCache, writeHistory } = require('./utils');
 
 const url = process.argv[2];
 
@@ -7,6 +7,7 @@ const url = process.argv[2];
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
+    writeHistory(url, 'R');
     await page.addScriptTag({url: 'https://unpkg.com/turndown/dist/turndown.js'});
     await page.addScriptTag({url: 'https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js'});
 

@@ -7,7 +7,8 @@ const content = readCache('_result_', 'preview')
 // Computes offset based on line number
 function computeOffset(n) {
     let height = process.env.LINES;
-    return Math.max(n - height/2, 0);
+    let preferredCursorPos = 1/3;
+    return Math.max(n - parseInt(height * preferredCursorPos), 0);
 }
 
 // Add color to the line depending on markdown element

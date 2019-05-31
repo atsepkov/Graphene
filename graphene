@@ -19,9 +19,11 @@ show_search() {
     query="$2"
 
     controls="f1:execute(bash $DIR/open_in_graphene.sh {}),f2:toggle-preview"
-    selection="$(node $DIR/search.js $engine "$query" | fzf --reverse --ansi --tiebreak=begin,index --bind "$controls" --preview-window=right:40% --header-lines=1 --preview="node $DIR/preview.js $engine {}")"
+    selection="$(node "$DIR/search.js" $engine "$query" |
+                 fzf --reverse --ansi --tiebreak=begin,index --bind "$controls" \
+                     --preview-window=right:40% --header-lines=1 --preview="node '$DIR/preview.js' $engine {}")"
     if [ ! -z "$selection" ]; then
-        bash $DIR/open.sh $engine "$selection"
+        bash "$DIR/open.sh" $engine "$selection"
     fi
 }
 
@@ -33,8 +35,34 @@ initialize() {
     echo "Rebuilding cache for $engine..."
     mkdir -p .cache
     export CACHING=1
-    node $DIR/search.js $engine
+    node "$DIR/search.js" $engine
     unset CACHING
+}
+
+# open history item
+open_history() {
+    local timestamp urltype url
+    timestamp=$1
+    urltype=$2
+    url=$3
+
+    case $urltype in
+        U)  # direct url
+            show_search url $url
+            ;;
+        S)  # search query
+            show_search url $url
+            ;;
+        N)  # navigational link
+            show_search url $url
+            ;;
+        R)  # result opened in graphene
+            bash "$DIR/open_in_graphene.sh" $url
+            ;;
+        X)  # externally opened result
+            open $url
+            ;;
+    esac
 }
 
 if [ "$#" -lt 2 ]; then
@@ -61,8 +89,11 @@ while getopts ":hr:o" opt; do
     esac
 done
 
-if [ "$1" != "url" ]; then
-    if [ ! -d $DIR/.cache ] || [ ! -f $DIR/.cache/$1-template.json ]; then
+if [ "$1" == "history" ]; then
+    open_history $(cat "$DIR/.cache/history" | fzf --reverse --ansi --tiebreak=begin,index)
+    exit
+elif [ "$1" != "url" ]; then
+    if [ ! -d "$DIR/.cache" ] || [ ! -f "$DIR/.cache/$1-template.json" ]; then
         initialize $1
     fi
 fi
