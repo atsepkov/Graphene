@@ -8,5 +8,6 @@ if [[ "$line" =~ \(pager\)$ ]]; then
     bash $DIR/graphene $engine $url
 else
     open $url
-    node -e "require('$DIR/utils').writeHistory('$url', 'X')"
+    result=$(echo $line | sed 's#\(.*\)https*://#\1#')
+    node -e "require('$DIR/utils').writeHistory('$url', 'X', { engine: '$engine', result: '$result' })"
 fi

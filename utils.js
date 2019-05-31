@@ -36,9 +36,21 @@ function writeCache(engine, type, json) {
 
 // writes entry to history file
 // types: S (search), U (url), N (navigational), R (result), X (external)
-function writeHistory(url, type, initial=false) {
+function writeHistory(url, type, params, initial=false) {
     let time = Date.now();
-    fs.appendFile(path.resolve(__dirname, './.cache/history'), `${initial ? '' : '    '}${time} ${type} ${url}\n`, (err) => {
+    let context = '';
+    if (params) {
+        if (type === 'S') {
+            context = `${params.engine}> "${params.query}" `;
+        } else if (type === 'R') {
+            context = `graphene> "${params.title}" `;
+        } else if (type === 'X') {
+            context = `${params.engine}>open> "${params.result}" `;
+        } else if (type === 'N') {
+            context = `${params.engine}>nav> `;
+        }
+    }
+    fs.appendFile(path.resolve(__dirname, './.cache/history'), `${initial ? '' : '    '}${time} ${type} ${context}${url}\n`, (err) => {
         if (err) {
             throw err;
         }

@@ -7,7 +7,8 @@ const url = process.argv[2];
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
-    writeHistory(url, 'R');
+    const pageTitle = await page.title();
+    writeHistory(url, 'R', { title: pageTitle });
     await page.addScriptTag({url: 'https://unpkg.com/turndown/dist/turndown.js'});
     await page.addScriptTag({url: 'https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js'});
 

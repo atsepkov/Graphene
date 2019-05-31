@@ -348,13 +348,13 @@ const isValidUrl = (string) => {
     } else if (isValidUrl(query) && domain(query) === domain(settings.query)) {
         // go directly to this page (navigational)
         await page.goto(query);
-        writeHistory(query, 'N');
+        writeHistory(query, 'N', { engine: engine });
     } else {
         // start a new search with query
         let modifier = settings.resultModifier ? settings.resultModifier + (process.env.RESULTS || settings.resultsPerPage || 20) : '';
         let searchQuery = settings.query + encodeURIComponent(query) + modifier;
         await page.goto(searchQuery);
-        writeHistory(searchQuery, 'S', true);
+        writeHistory(searchQuery, 'S', { engine: engine, query: query }, true);
     }
     // await page.screenshot({path: 'example.png'});
     let results = await page.evaluate((columns, weights, settings) => {

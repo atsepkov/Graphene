@@ -37,6 +37,11 @@ While previewing the page via `F1`, you can navigate/search the page using searc
 all page headings as search results, effectivelly creating a table of contents for the page. Similarly, typing `` ` `` will filter all code blocks
 (useful for navigating directly to the example on websites like MDN).
 
+Other options:
+```
+graphene history                        # browse search/view history
+```
+
 Installation
 ============
 Project currently uses the following dependencies:
@@ -66,7 +71,6 @@ I've built this mainly for myself, the initial set of features are mainly driven
 - Authentication/login (i.e. for searching your email).
 - Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
 - Use of `goodQuery` setting to improve initial calibration.
-- Browser history.
 
 Configuration
 =============

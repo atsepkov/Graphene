@@ -107,8 +107,8 @@ if [ "$1" == "history" ]; then
         }
         close(cmd)
         print
-    }' | sed 's/\([0-9-]\{10\} [0-9:]\{5\}\) \([A-Z]\)/'$esc'[1m'$esc'[30m\1'$esc'[0m '$esc'[31m\2'$esc'[0m/' |
-        fzf --reverse --ansi --header " Browsing History " --tiebreak=begin,index --preview-window=bottom:1 --preview="echo -e '$legend'")
+    }' | sed 's/\([0-9-]\{10\} [0-9:]\{5\}\) \([A-Z"]\)\( [a-z>]*>\)\{0,1\}\(.*\)\{0,1\}\( [^[:space:]]*\)$/'$esc'[1m'$esc'[30m\1'$esc'[0m '$esc'[31m\2'$esc'[36m\3'$esc'[0m\4'$esc'[0m   '$esc'[34m\5'$esc'[0m/; s/"\(.*\)"/\1/' |
+        fzf --reverse --ansi --header " Browsing History " --tiebreak=begin,index --tac --preview-window=bottom:1 --preview="echo -e '$legend'")
     exit
 elif [ "$1" != "url" ]; then
     if [ ! -d "$DIR/.cache" ] || [ ! -f "$DIR/.cache/$1-template.json" ]; then
