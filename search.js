@@ -344,11 +344,13 @@ const isValidUrl = (string) => {
             url = 'http://' + url;
         }
         await page.goto(url);
-        writeHistory(url, 'U', true);
+        let title = await page.title();
+        writeHistory(url, 'U', { title: title }, true);
     } else if (isValidUrl(query) && domain(query) === domain(settings.query)) {
         // go directly to this page (navigational)
         await page.goto(query);
-        writeHistory(query, 'N', { engine: engine });
+        let title = await page.title();
+        writeHistory(query, 'N', { engine: engine, title: title });
     } else {
         // start a new search with query
         let modifier = settings.resultModifier ? settings.resultModifier + (process.env.RESULTS || settings.resultsPerPage || 20) : '';

@@ -47,7 +47,9 @@ function writeHistory(url, type, params, initial=false) {
         } else if (type === 'X') {
             context = `${params.engine}>open> "${params.result}" `;
         } else if (type === 'N') {
-            context = `${params.engine}>nav> `;
+            context = `${params.engine}>nav> "${params.title}" `;
+        } else if (type === 'U') {
+            context = `url> "${params.title}" `;
         }
     }
     fs.appendFile(path.resolve(__dirname, './.cache/history'), `${initial ? '' : '    '}${time} ${type} ${context}${url}\n`, (err) => {
