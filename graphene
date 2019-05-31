@@ -42,9 +42,10 @@ initialize() {
 # open history item
 open_history() {
     local timestamp urltype url
-    timestamp=$1
-    urltype=$2
-    url=$3
+    date=$1
+    time=$2
+    urltype=$3
+    url=$4
 
     case $urltype in
         U)  # direct url
@@ -90,7 +91,24 @@ while getopts ":hr:o" opt; do
 done
 
 if [ "$1" == "history" ]; then
-    open_history $(cat "$DIR/.cache/history" | fzf --reverse --ansi --tiebreak=begin,index)
+    # figure out if this has GNU date, or fallback to OSX date if not
+    date="date -d @"
+    date -d @1550000000 &>/dev/null
+    if [ $? -eq 1 ]; then
+        date="date -r "
+    fi
+
+    legend="\x1b[1m\x1b[30mS: Search page\tU: Direct URL\tN: Navigational page\tR: Graphene-opened search result\tX: Externally-opened search result\x1b[0m"
+    esc=$(echo -e "\x1b") # sed seems to have trouble generating this sequence
+    open_history $(cat "$DIR/.cache/history" | awk -v dt="$date" '{
+        cmd = dt substr( $1, 1, length($1) - 3 ) " +\"%Y-%m-%d %H:%M\""
+        if ( (cmd | getline dd) > 0 ) {
+            $1 = dd
+        }
+        close(cmd)
+        print
+    }' | sed 's/\([0-9-]\{10\} [0-9:]\{5\}\) \([A-Z]\)/'$esc'[1m'$esc'[30m\1'$esc'[0m '$esc'[31m\2'$esc'[0m/' |
+        fzf --reverse --ansi --header " Browsing History " --tiebreak=begin,index --preview-window=bottom:1 --preview="echo -e '$legend'")
     exit
 elif [ "$1" != "url" ]; then
     if [ ! -d "$DIR/.cache" ] || [ ! -f "$DIR/.cache/$1-template.json" ]; then
