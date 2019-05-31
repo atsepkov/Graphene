@@ -2,16 +2,19 @@ Graphene Text Browser
 ========================
 [![Graphene Demo](https://asciinema.org/a/249148.svg)](https://asciinema.org/a/249148)
 
-This is basically a text-based browser / search engine aggregator. It allows you to search the web through the terminal in a style that makes the most
+A text-based browser / search aggregator. It allows you to search the web through the terminal in a style that makes the most
 sense in the terminal. It does not try to emulate a GUI browser in the terminal or replace it, because the terminal was not meant for that, and that
-just creates a miserable experience for the user. Once you find the page of interest, it opens it up in your default browser.
+just creates a miserable experience for the user. Once you find the page of interest, you can preview it as markdown (`[F1]`) or open it
+in your browser of choice (`[Enter]`).
+
+Main use case is to minimize context switch by starting your search in the termimal (same place you're editing your code), and only jump to the
+browser if you found the result you want. This also cuts down distractions that you'll likely encounter in the regular browser, and formats every
+page in a consistent way.
 
 This is still a work in progress, but works decently well. The original inspiration for this project was Ranger File Manager, but after realizing that
 adapting it from local browsing to the web would require a significant rewrite, I put the project aside. Then, a couple months later, I stumbled into
 FZF, and figured I'd give this tool a try again using FZF instead of Ranger as a way to represent results. And this is the result.
 
-Main use case for this is to minimize context switch by starting your search in the termimal (same place you're editing your code), and only jump to the
-browser if you found the result you want. This also cuts down distractions that you'll likely encounter in the regular browser.
 
 Usage
 =====
