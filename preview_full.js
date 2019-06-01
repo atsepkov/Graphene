@@ -33,8 +33,12 @@ function pretty(line, next, highlight) {
     } else if (mode === TABLE) {
         // exit table mode
         let table = new MarkdownTableFormatter();
-        table.format_table(buffer.join('\n'));
-        console.log(table.output_table);
+        try {
+            table.format_table(buffer.join('\n'));
+            console.log(table.output_table);
+        } catch (e) {
+            console.log(color.red + "[ Couldn't format table ]" + color.reset);
+        }
         buffer = [];
         mode = NORMAL;
     }
