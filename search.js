@@ -421,7 +421,7 @@ const isValidUrl = (string) => {
         await page.goto(searchQuery);
         writeHistory(searchQuery, 'S', { engine: engine, query: query }, true);
     }
-    await page.screenshot({path: 'example.png'});
+    // await page.screenshot({path: 'example.png'});
     let results = await page.evaluate((columns, weights, settings) => {
 
         /** LIST OF LOGIC TO BE USED */
