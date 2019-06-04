@@ -8,7 +8,7 @@
         "usernameSelector": "#loginUsername",
         "passwordSelector": "#loginPassword",
         "submitSelector": "button.AnimatedForm__submitButton",
-        "username": "-",
-        "password": "-"
+        "username": "{{USERNAME}}",
+        "password": "{{PASSWORD}}"
     }
 }

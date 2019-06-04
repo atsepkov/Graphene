@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const { color, dictionary, readCache, writeCache, writeHistory, weights, thresholds } = require('./utils');
+const { color, dictionary, requestUserFields, readCache, writeCache, writeHistory, weights, thresholds } = require('./utils');
 
 const engine = process.argv[2];
 const query = process.argv[3];
@@ -316,7 +316,8 @@ const isValidUrl = (string) => {
             '--window-position=0,0',
             '--ignore-certifcate-errors',
             '--ignore-certifcate-errors-spki-list',
-            '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"'
+            '--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36"',
+            '--disk-cache-dir=/tmp',
         ],
         ignoreHTTPSErrors: true,
     });
@@ -333,43 +334,70 @@ const isValidUrl = (string) => {
     });
 
     // login, if relevant info is available
-    if (settings.authentication) {
+    if (settings.authentication && !process.env.CACHING) {
         const auth = settings.authentication;
-        if (auth.submitUsernameSelector) {
-            // 2-page authentication system (i.e. gmail)
-            await page.goto(auth.loginPage);
-            await page.type(auth.usernameSelector, auth.username);
-            await Promise.all([
-                page.click(auth.submitUsernameSelector),
-                page.waitForNavigation({ waitUntil: 'networkidle0' }),
-            ]);
-            await page.type(auth.passwordSelector, auth.password);
-            await Promise.all([
-                page.click(auth.submitPasswordSelector),
-                page.waitForNavigation({ waitUntil: 'networkidle0' }),
-            ]);
-            // await page.screenshot({path: 'postlogin.png'});
-        } else {
-            // regular 1-page authentication
-            await page.goto(auth.loginPage);
-            await page.type(auth.usernameSelector, auth.username);
-            await page.type(auth.passwordSelector, auth.password);
-            await Promise.all([
-                page.click(auth.submitSelector),
-                page.waitForNavigation({ waitUntil: 'networkidle0' }),
-            ]);
-            // await page.screenshot({path: 'postlogin.png'});
+        let config = readCache(engine, 'auth');
+        let cookieData = readCache(engine, 'cookies');
+        if (config.url) {
+            auth.loginPage = auth.loginPage.replace('{{URL}}', config.url);
+            settings.query = settings.query.replace('{{URL}}', config.url);
         }
 
-        // get cookies for future use
-        // for now we'll jsut reauthenticate each time, in the future we should test
-        // cookies first, and have a way to test if we're already logged in:w
-        // const cookies = await page.cookies();
+        if (cookieData.cookies) {
+            // we already have cookies, set them and continue
+            // TODO: we need to test for expired cookies
+            for (let cookie of cookieData.cookies) {
+                await page.setCookie(cookie);
+            }
+        } else {
+            // no cookies, perform login
+            if (config.username) {
+                auth.username = auth.username.replace('{{USERNAME}}', config.username);
+            }
+            if (config.password) {
+                auth.password = auth.password.replace('{{PASSWORD}}', config.password);
+            }
+
+            if (auth.submitUsernameSelector) {
+                // 2-page authentication system (i.e. gmail)
+                await page.goto(auth.loginPage);
+                await page.type(auth.usernameSelector, auth.username);
+                await Promise.all([
+                    page.click(auth.submitUsernameSelector),
+                    page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                ]);
+                await page.type(auth.passwordSelector, auth.password);
+                await Promise.all([
+                    page.click(auth.submitPasswordSelector),
+                    page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                ]);
+                // await page.screenshot({path: 'postlogin.png'});
+            } else {
+                // regular 1-page authentication
+                await page.goto(auth.loginPage);
+                // await page.screenshot({path: 'login.png'});
+                await page.type(auth.usernameSelector, auth.username);
+                await page.type(auth.passwordSelector, auth.password);
+                await Promise.all([
+                    page.click(auth.submitSelector),
+                    page.waitForNavigation({ waitUntil: 'networkidle0' }),
+                ]);
+                // await page.screenshot({path: 'postlogin.png'});
+            }
+
+            // get cookies for future use
+            // for now we'll jsut reauthenticate each time, in the future we should test
+            // cookies first, and have a way to test if we're already logged in:w
+            const cookies = await page.cookies();
+            writeCache(engine, 'cookies', { cookies: cookies });
+        }
     }
 
     // page.on('console', msg => console.log('page log: ' + msg.text()));
 
     if (process.env.CACHING) {
+        let config = await requestUserFields(engine, settings);
+        settings.query = settings.query.replace('{{URL}}', config.url);
         // caching page structure
         await page.goto(settings.query + encodeURIComponent(settings.badQuery));
     } else if (engine === "url") {

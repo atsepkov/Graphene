@@ -34,8 +34,70 @@ function writeCache(engine, type, json) {
     fs.writeFileSync(path.resolve(__dirname, './.cache/' + engine + '-' + type + '.json'), JSON.stringify(json));
 };
 
+// scans config for placeholders for user to fill in, and requests them from user
+let input;
+function initInput() {
+    input = require('readline').createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    // overwrite to hide password
+    input._writeToOutput = function _writeToOutput(stringToWrite) {
+      if (input.stdoutMuted)
+        //input.output.write("\x1B[2K\x1B[200D"+input.query+"["+((input.line.length%2==1)?"=-":"-=")+"]");
+        input.output.write("*");
+      else
+        input.output.write(stringToWrite);
+    };
+}
+// helper function to get user input and avoid pyramid of doom
+function ask(question, test, hide=false) {
+    return new Promise((resolve) => {
+        if (test()) {
+            input.stdoutMuted = hide;
+            input.question(`${question}: `, (answer) => {
+                resolve(answer);
+            });
+        } else {
+            resolve(undefined);
+        }
+    });
+}
+async function requestUserFields(engine, settings) {
+    let userConfig = readCache(engine, 'auth');
+
+    if (!Object.keys(userConfig).length) {
+        initInput();
+        // website
+        userConfig.url = await ask('This engine needs a host website', () => /{{URL}}/.test(settings.query));
+        // userConfig.url && console.log('Website:', userConfig.url);
+
+        if (settings.authentication) {
+            const auth = settings.authentication;
+            // username
+            userConfig.username = await ask('Enter username', () => auth.username && /{{USERNAME}}/.test(auth.username));
+            // userConfig.username && console.log('User Name:', userConfig.username);
+
+            // password
+            userConfig.password = await ask('Enter password', () => {
+                return auth.password && /{{PASSWORD}}/.test(auth.password)
+            }, true);
+            // userConfig.password && console.log('Password:', ''.padEnd(userConfig.password.length, '*'));
+        }
+
+        let save = (await ask('Save for future use? [yN]', () => Object.keys(userConfig).length)) === 'y';
+        if (save) {
+            writeCache(engine, 'auth', userConfig);
+        }
+        input.close();
+    }
+    // console.log(userConfig)
+    return userConfig;
+}
+
 // writes entry to history file
 // types: S (search), U (url), N (navigational), R (result), X (external)
+// pen
 function writeHistory(url, type, params, initial=false) {
     let time = Date.now();
     let context = '';
@@ -317,6 +379,7 @@ MarkdownTableFormatter.prototype.pad_cells_for_output = function() {
 
 module.exports = {
     color,
+    requestUserFields,
     readCache,
     writeCache,
     writeHistory,

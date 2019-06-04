@@ -1,0 +1,14 @@
+{
+    "banner": "{bg=white,fg=red}Jira",
+	"query": "https://{{URL}}/jira/secure/RapidBoard.jspa?view=planning.nodetail&quickFilter=71424&rapidView=",
+    "goodQuery": "",
+    "badQuery": "dlskjadbhlads",
+    "authentication": {
+        "loginPage": "https://{{URL}}/jira/login.jsp",
+        "usernameSelector": "#login-form-username",
+        "passwordSelector": "#login-form-password",
+        "submitSelector": "#login-form-submit",
+        "username": "{{USERNAME}}",
+        "password": "{{PASSWORD}}"
+    }
+}

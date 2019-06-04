@@ -9,7 +9,7 @@
         "submitUsernameSelector": "#identifierNext",
         "passwordSelector": "input[name='password']",
         "submitPasswordSelector": "#passwordNext",
-        "username": "-",
-        "password": "-"
+        "username": "{{USERNAME}}",
+        "password": "{{PASSWORD}}"
     }
 }

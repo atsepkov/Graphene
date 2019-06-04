@@ -71,9 +71,10 @@ Roadmap
 I've built this mainly for myself, the initial set of features are mainly driven by my own use case an aesthetics. What I would like to add (when time allows):
 
 - Identification of categorizing components (tags (github, npm), search subtypes (github, google, amazon)).
-- Authentication/login (i.e. for searching your email).
+- Authentication encryption
 - Ability to trigger a category/subtype search (i.e. search issue list of specific github repo).
 - Use of `goodQuery` setting to improve initial calibration.
+- `graphene-dsl`: a simplified scripting language for customizing portions of webpage loading logic or performing actions such as complex authentication
 
 Configuration
 =============
