@@ -1,6 +1,6 @@
 {
     "banner": "{bg=color166,fg=white}StackOverflow",
-	"query": "https://stackoverflow.com/search?q=",
+    "query": "https://stackoverflow.com/search?q=",
     "goodQuery": "regex",
     "badQuery": "dlskjadbhlads",
     "pager": {

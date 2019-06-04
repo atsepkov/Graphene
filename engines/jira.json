@@ -1,6 +1,6 @@
 {
     "banner": "{bg=white,fg=red}Jira",
-	"query": "https://{{URL}}/jira/secure/RapidBoard.jspa?view=planning.nodetail&quickFilter=71424&rapidView=",
+    "query": "https://{{URL}}/jira/secure/RapidBoard.jspa?view=planning.nodetail&quickFilter=71424&rapidView=",
     "goodQuery": "",
     "badQuery": "dlskjadbhlads",
     "authentication": {

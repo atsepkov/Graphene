@@ -1,6 +1,6 @@
 {
     "banner": "{bg=red,fg=white}reddit",
-	"query": "https://www.reddit.com/search/?q=",
+    "query": "https://www.reddit.com/search/?q=",
     "goodQuery": "dating",
     "badQuery": "dlskjadbhlads",
     "authentication": {

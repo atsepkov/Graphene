@@ -97,7 +97,6 @@ async function requestUserFields(engine, settings) {
 
 // writes entry to history file
 // types: S (search), U (url), N (navigational), R (result), X (external)
-// pen
 function writeHistory(url, type, params, initial=false) {
     let time = Date.now();
     let context = '';

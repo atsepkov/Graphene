@@ -1,6 +1,6 @@
 {
     "banner": "{bg=white,fg=yellow}Amazon",
-	"query": "https://www.amazon.com/s?k=",
+    "query": "https://www.amazon.com/s?k=",
     "goodQuery": "desk",
     "badQuery": "dlskjadbhlads",
     "pager": {

@@ -1,6 +1,6 @@
 {
     "banner": "{bg=red,fg=white}gmail",
-	"query": "https://mail.google.com/mail/u/0/#search/",
+    "query": "https://mail.google.com/mail/u/0/#search/",
     "goodQuery": "",
     "badQuery": "dlskjadbhlads",
     "authentication": {
