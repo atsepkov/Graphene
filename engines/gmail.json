@@ -1,0 +1,15 @@
+{
+    "banner": "{bg=red,fg=white}gmail",
+	"query": "https://mail.google.com/mail/u/0/#search/",
+    "goodQuery": "",
+    "badQuery": "dlskjadbhlads",
+    "authentication": {
+        "loginPage": "https://accounts.google.com/signin/v2/identifier",
+        "usernameSelector": "#identifierId",
+        "submitUsernameSelector": "#identifierNext",
+        "passwordSelector": "input[name='password']",
+        "submitPasswordSelector": "#passwordNext",
+        "username": "-",
+        "password": "-"
+    }
+}

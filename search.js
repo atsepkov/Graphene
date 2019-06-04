@@ -208,7 +208,7 @@ function removeCruftAndClassify(currentResults) {
                             cruft.push(found);
                         } else if (dictionary.cruft.includes(element.name.toLowerCase())) {
                             cruft.push(found);
-                        } else {
+                        } else if (settings.pager) {
                             // generic navigational component that may be related to current search
                             // (name matches, url does not)
                             generic.push(found);
@@ -332,6 +332,41 @@ const isValidUrl = (string) => {
         }
     });
 
+    // login, if relevant info is available
+    if (settings.authentication) {
+        const auth = settings.authentication;
+        if (auth.submitUsernameSelector) {
+            // 2-page authentication system (i.e. gmail)
+            await page.goto(auth.loginPage);
+            await page.type(auth.usernameSelector, auth.username);
+            await Promise.all([
+                page.click(auth.submitUsernameSelector),
+                page.waitForNavigation({ waitUntil: 'networkidle0' }),
+            ]);
+            await page.type(auth.passwordSelector, auth.password);
+            await Promise.all([
+                page.click(auth.submitPasswordSelector),
+                page.waitForNavigation({ waitUntil: 'networkidle0' }),
+            ]);
+            // await page.screenshot({path: 'postlogin.png'});
+        } else {
+            // regular 1-page authentication
+            await page.goto(auth.loginPage);
+            await page.type(auth.usernameSelector, auth.username);
+            await page.type(auth.passwordSelector, auth.password);
+            await Promise.all([
+                page.click(auth.submitSelector),
+                page.waitForNavigation({ waitUntil: 'networkidle0' }),
+            ]);
+            // await page.screenshot({path: 'postlogin.png'});
+        }
+
+        // get cookies for future use
+        // for now we'll jsut reauthenticate each time, in the future we should test
+        // cookies first, and have a way to test if we're already logged in:w
+        // const cookies = await page.cookies();
+    }
+
     // page.on('console', msg => console.log('page log: ' + msg.text()));
 
     if (process.env.CACHING) {
@@ -358,7 +393,7 @@ const isValidUrl = (string) => {
         await page.goto(searchQuery);
         writeHistory(searchQuery, 'S', { engine: engine, query: query }, true);
     }
-    // await page.screenshot({path: 'example.png'});
+    await page.screenshot({path: 'example.png'});
     let results = await page.evaluate((columns, weights, settings) => {
 
         /** LIST OF LOGIC TO BE USED */

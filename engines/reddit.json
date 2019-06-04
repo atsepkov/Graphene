@@ -1,0 +1,14 @@
+{
+    "banner": "{bg=red,fg=white}reddit",
+	"query": "https://www.reddit.com/search/?q=",
+    "goodQuery": "dating",
+    "badQuery": "dlskjadbhlads",
+    "authentication": {
+        "loginPage": "https://www.reddit.com/login/",
+        "usernameSelector": "#loginUsername",
+        "passwordSelector": "#loginPassword",
+        "submitSelector": "button.AnimatedForm__submitButton",
+        "username": "-",
+        "password": "-"
+    }
+}
