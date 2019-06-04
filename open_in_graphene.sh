@@ -1,4 +1,5 @@
-line=$1
+engine=$1
+line=$2
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 url=$(echo $line | sed 's#.*\(https*://\)#\1#')
@@ -9,12 +10,15 @@ url=$(echo $line | sed 's#.*\(https*://\)#\1#')
 #     open $url
 # fi
 
+            # --bind "f1:execute(LINES=$LINES node '$DIR/preview_full.js' {} | less -r < /dev/tty > /dev/tty 2>&1)" \
 show_result() {
     local url
     url="$1"
-    echo "$(node $DIR/scan_page.js "$url" |
+    # TODO: fix, f1 is currently broken, the idea is to use it as copy/save mode
+    node $DIR/scan_page.js $engine "$url" |
             fzf --reverse --ansi --tiebreak=begin,index \
-            --preview-window=right:80% --preview="node $DIR/preview_full.js {}" && echo $url)"
+            --bind "f1:execute(LINES=$LINES node '$DIR/preview_full.js' {} | nvim < /dev/tty > /dev/tty 2>&1)" \
+            --preview-window=right:80% --preview="node '$DIR/preview_full.js' {}"
 }
 
 show_result "$url"

@@ -1,11 +1,19 @@
 const puppeteer = require('puppeteer');
 const { color, readCache, writeCache, writeHistory } = require('./utils');
 
-const url = process.argv[2];
+const engine = process.argv[2];
+const url = process.argv[3];
 
 (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // load cookies, if they exist
+    const cookieData = readCache(engine, 'cookies');
+    for (let cookie of cookieData.cookies) {
+        await page.setCookie(cookie);
+    }
+
     await page.goto(url);
     const pageTitle = await page.title();
     writeHistory(url, 'R', { title: pageTitle });

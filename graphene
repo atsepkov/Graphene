@@ -18,7 +18,7 @@ show_search() {
     engine=$1
     query="$2"
 
-    controls="f1:execute(bash $DIR/open_in_graphene.sh {}),f2:toggle-preview"
+    controls="f1:execute(bash $DIR/open_in_graphene.sh $engine {}),f2:toggle-preview"
     selection="$(node "$DIR/search.js" $engine "$query" |
                  fzf --reverse --ansi --tiebreak=begin,index --bind "$controls" \
                      --preview-window=right:40% --header-lines=1 --preview="node '$DIR/preview.js' $engine {}")"
