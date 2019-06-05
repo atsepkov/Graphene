@@ -301,7 +301,7 @@ function removeCruftAndClassify(currentResults) {
 }
 
 // load engine-specific settings
-let settings;
+let settings = {};
 if (engine !== 'url') {
     try {
         settings = require('./engines/' + engine);
