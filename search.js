@@ -54,6 +54,8 @@ function outputToTerminal(format, groups) {
                 groupColor = color.black + color.bright;
             } else if (group.groupType === OTHER) {
                 groupColor = color.black + color.bright;
+            } else if (group.groupType === CATEGORY) {
+                groupColor = color.green;
             } else {
                 groupColor = color.white;
             }
@@ -62,7 +64,9 @@ function outputToTerminal(format, groups) {
                 if (!process.env.ONLY_MAIN || group.groupType === MAIN || group.groupType === PAGER) {
                     curated += 
                         groupColor + element.name.replace(/\n/g, ', ').padEnd(parseInt(120 * 2 / 3)) + color.reset + '\t' + 
-                        color.blue + color.underscore + element.href + color.reset + (group.groupType === PAGER ? '\t\t(pager)' : '') + '\n';
+                        color.blue + color.underscore + element.href + color.reset + (
+                            group.groupType === PAGER || group.groupType === CATEGORY ? '\t\t(pager)' : ''
+                        ) + '\n';
                 }
             });
         });        
@@ -140,8 +144,8 @@ function isNavigation(element) {
 // constants for group types
 const MAIN =    0;
 const PAGER =   1;
-const CATEGROY =2;
-const CATEGROY2=3;
+const CATEGORY =2;
+const CATEGORY2=3;
 const DEFAULT = 4;
 const GENERIC = 5;
 const OTHER =   6;
@@ -248,6 +252,18 @@ function removeCruftAndClassify(currentResults) {
                         // this is needed for now since we're going off of bad query, since the query may not yield
                         // other pages, as we improve caching logic, we can probbaly remove this
                         group.groupType = PAGER;
+                    } else if (settings.categories) {
+                        Object.keys(settings.categories).forEach(category => {
+                            settings.categories[category].forEach(rule => {
+                                if (rule.find) {
+                                    // a rule that recategorizes existing results
+                                    if (rule.find.href && new RegExp(rule.find.href, 'u').test(e.href)) {
+                                        e.name = category + ': ' + e.name;
+                                        group.groupType = CATEGORY;
+                                    }
+                                }
+                            });
+                        });
                     } else if (e.href.slice(0, 11) === "javascript:") {
                         jsLink.push(e);
                     }
@@ -278,6 +294,7 @@ function removeCruftAndClassify(currentResults) {
             currentResults.groups[groupIndex].groupType = MAIN;
             break;
         }
+		groupIndex++;
     }
 
     return currentResults.groups.sort((a, b) => a.groupType - b.groupType);

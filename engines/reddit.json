@@ -10,5 +10,13 @@
         "submitSelector": "button.AnimatedForm__submitButton",
         "username": "{{USERNAME}}",
         "password": "{{PASSWORD}}"
+    },
+    "categories": {
+        "subreddit": [
+            { "find": { "href": "/r/[^/]+/$" } }
+        ],
+        "user": [
+            { "find": { "href": "/user/" } }
+        ]
     }
 }

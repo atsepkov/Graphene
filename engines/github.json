@@ -6,5 +6,13 @@
     "pager": {
         "name": "Next",
         "href": "p="
+    },
+    "categories": {
+        "language": [
+            { "find": { "href": "l=" } }
+        ],
+        "tag": [
+            { "find": { "href": "/topics/" } }
+        ]
     }
 }

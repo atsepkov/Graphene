@@ -3,8 +3,23 @@
     "query": "https://www.npmjs.com/search?q=",
     "goodQuery": "react",
     "badQuery": "dlskjadbhlads",
+    "weights": {
+        "context": 3,
+        "coverage": 1,
+        "area": 1,
+        "textLength": 1,
+        "numElements": 0
+    },
     "pager": {
         "name": "»",
         "href": "page="
+    },
+    "categories": {
+        "user": [
+            { "find": { "href": "/~" } }
+        ],
+        "tag": [
+            { "find": { "href": "q=keywords:" } }
+        ]
     }
 }

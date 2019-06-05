@@ -9,5 +9,13 @@
     },
     "minSize": 30000,
     "resultsPerPage": 20,
-    "resultModifier": "&pagesize="
+    "resultModifier": "&pagesize=",
+    "categories": {
+        "user": [
+            { "find": { "href": "/users/" } }
+        ],
+        "tag": [
+            { "find": { "href": "/tagged/" } }
+        ]
+    }
 }
