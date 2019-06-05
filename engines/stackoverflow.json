@@ -12,10 +12,10 @@
     "resultModifier": "&pagesize=",
     "categories": {
         "user": [
-            { "find": { "href": "/users/" } }
+            { "find": { "href": "/users/", "name": ".+" } }
         ],
         "tag": [
-            { "find": { "href": "/tagged/" } }
+            { "find": { "href": "/tagged/", "name": ".+" } }
         ]
     }
 }

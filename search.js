@@ -246,20 +246,27 @@ function removeCruftAndClassify(currentResults) {
                     group.groupType = GENERIC;
                 }
             } else {
-                group.elements.forEach(e => {
+                let categoryElements = [];
+                let spliceOffset = 0;
+                group.elements.slice(0).forEach((e, i) => {
                     urlMap[e.href] = e;
                     if (isNavigation(e)) {
                         // this is needed for now since we're going off of bad query, since the query may not yield
                         // other pages, as we improve caching logic, we can probbaly remove this
                         group.groupType = PAGER;
-                    } else if (settings.categories) {
+                    } else if (settings.categories && !(group.groupType === PAGER)) {
                         Object.keys(settings.categories).forEach(category => {
                             settings.categories[category].forEach(rule => {
                                 if (rule.find) {
                                     // a rule that recategorizes existing results
                                     if (rule.find.href && new RegExp(rule.find.href, 'u').test(e.href)) {
+                                        if (rule.find.name && !(new RegExp(rule.find.name, 'u').test(e.name))) {
+                                            return;
+                                        }
                                         e.name = category + ': ' + e.name;
-                                        group.groupType = CATEGORY;
+                                        categoryElements.push(e);
+                                        group.elements.splice(i - spliceOffset, 1);
+                                        spliceOffset++;
                                     }
                                 }
                             });
@@ -267,7 +274,20 @@ function removeCruftAndClassify(currentResults) {
                     } else if (e.href.slice(0, 11) === "javascript:") {
                         jsLink.push(e);
                     }
-                })
+                });
+                if (categoryElements.length) {
+                    // some elements were categorized
+                    if (!group.elements.length) {
+                        // entire group got categorized
+                        group.elements = categoryElements;
+                        group.groupType = CATEGORY;
+                    } else {
+                        // part of the group got categorized
+                        // TODO; technically group areas need to be recomputed and they need to be resorted
+                        let categoryGroup = { ...group, groupType: CATEGORY, elements: categoryElements };
+                        currentResults.groups.splice(currentIndex, 0, categoryGroup);
+                    }
+                }
             }
 
             // further classify the group
