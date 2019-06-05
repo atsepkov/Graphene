@@ -28,9 +28,10 @@ graphene url [url]
 
 Result: An FZF query with a set of links from the page classified as follows:
 - golden/yellow: main group (probably results you meant to search for)
-- white: regular group, if golden group is wrong, your results may be here
-- black/gray: most-likely cruft (irrelevant/generic page links)
 - cyan: navigational links that will result in query to be reperformed instead of opening the page
+- green: categories defined for this engine, clicking these will rerender the category URL as new set of search results
+- white: regular group, if golden group is wrong, your results may be here (you can adjust weights to reclassify)
+- black/gray: most-likely cruft (irrelevant/generic page links)
 
 Selecting a result will open it in your browser of choice, unless the result is a navigational (cyan) link, which will re-trigger the search with new
 offset. Pressing `F1` will instead load the result as markdown version of the page in Graphene (for text-based pages this works well and often can 
