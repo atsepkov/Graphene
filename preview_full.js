@@ -6,6 +6,7 @@ const content = readCache('_result_', 'preview')
 
 // Computes offset based on line number
 function computeOffset(n) {
+    //let height = process.stdout.rows;
     let height = process.env.LINES;
     let preferredCursorPos = 1/3;
     return Math.max(n - parseInt(height * preferredCursorPos), 0);
@@ -65,7 +66,7 @@ function pretty(line, next, highlight) {
     }
 
     if (highlight) {
-        line = color.bright + line;
+        line = color.bright + line + color.reset;
     }
 
     /*let chunks = stringToChunks(line, maxLen);
@@ -82,6 +83,7 @@ function pretty(line, next, highlight) {
 // Create illusion of scrolled text based on selected line number
 let offset = computeOffset(lineNumber);
 console.log(color.blue + content.url + color.reset);
+console.log(lineNumber, process.env.LINES, process.stdout.rows, offset)
 content.content.forEach((line, index) => {
     let next = content.content.length > index + 1 ? content.content[index + 1] : '';
     if (index > offset) {
