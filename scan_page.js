@@ -10,8 +10,10 @@ const url = process.argv[3];
 
     // load cookies, if they exist
     const cookieData = readCache(engine, 'cookies');
-    for (let cookie of cookieData.cookies) {
-        await page.setCookie(cookie);
+    if (cookieData.cookies) {
+        for (let cookie of cookieData.cookies) {
+            await page.setCookie(cookie);
+        }
     }
 
     await page.goto(url);
