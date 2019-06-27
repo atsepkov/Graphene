@@ -1,0 +1,13 @@
+{
+    "banner": "{bg=color166,fg=bright}DuckDuckGo",
+    "query": "https://www.duckduckgo.com/?q=",
+    "goodQuery": "food",
+    "badQuery": "dlskjadbhlads",
+    "pager": {
+        "name": "Next",
+        "href": "&start="
+    },
+    "resultsPerPage": 20,
+    "resultModifier": "&num=",
+    "minGroupSize": 30000
+}
