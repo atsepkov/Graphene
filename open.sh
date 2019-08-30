@@ -7,7 +7,10 @@ url=$(echo $line | sed 's#.*\(https*://\)#\1#')
 if [[ "$line" =~ \(pager\)$ ]]; then
     bash $DIR/graphene $engine $url
 else
-    open $url
+    OPENCMD=open
+    [[ $(which xdg-open) ]] && OPENCMD=xdg-open
+
+    $OPENCMD $url
     result=$(echo $line | sed 's#\(.*\)https*://#\1#')
     node -e "require('$DIR/utils').writeHistory('$url', 'X', { engine: '$engine', result: '$result' })"
 fi
