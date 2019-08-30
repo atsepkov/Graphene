@@ -16,7 +16,7 @@ display_usage() {
 show_search() {
     local engine query controls selection 
     engine=$1
-    query="$2"
+    query="${@:2}"
 
     controls="f1:execute(bash $DIR/open_in_graphene.sh $engine {}),f2:toggle-preview"
     selection="$(node "$DIR/search.js" $engine "$query" |
@@ -115,4 +115,4 @@ elif [ "$1" != "url" ]; then
         initialize $1
     fi
 fi
-show_search $1 "$2"
+show_search $1 "${@:2}"
